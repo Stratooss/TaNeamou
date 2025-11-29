@@ -1,0 +1,10 @@
+{
+  "articles": [
+    {
+      "title": "Δοκιμαστική Είδηση",
+      "simpleText": "Αυτό είναι ένα παράδειγμα απλού κειμένου είδησης.",
+      "sourceUrl": "https://example.com",
+      "sourceName": "Παράδειγμα"
+    }
+  ]
+}
