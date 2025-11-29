@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8" />
+  <title>Εύκολες Ειδήσεις</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 1rem; }
+    h1 { text-align: center; }
+    .article { border: 1px solid #ddd; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
+    .source { font-size: 0.8rem; color: #555; }
+  </style>
+</head>
+<body>
+  <h1>Εύκολες Ειδήσεις</h1>
+  <div id="news"></div>
+
+  <script>
+    fetch('news.json')
+      .then(r => r.json())
+      .then(data => {
+        const container = document.getElementById('news');
+        data.articles.forEach(a => {
+          const div = document.createElement('div');
+          div.className = 'article';
+          div.innerHTML = `
+            <h2>${a.title}</h2>
+            <p>${a.simpleText}</p>
+            <p class="source">Πηγή: <a href="${a.sourceUrl}" target="_blank">${a.sourceName}</a></p>
+          `;
+          container.appendChild(div);
+        });
+      })
+      .catch(err => {
+        document.getElementById('news').innerText = 'Προς το παρόν δεν υπάρχουν ειδήσεις.';
+      });
+  </script>
+</body>
+</html>
