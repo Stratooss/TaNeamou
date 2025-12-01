@@ -67,6 +67,21 @@
       object-fit: cover;
     }
 
+    /* Βίντεο άρθρου */
+    .article-video-wrapper {
+      width: 100%;
+      margin-bottom: 1rem;
+    }
+
+    .article-video {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 16px;
+      border: none;
+      background-color: #000;
+      display: block;
+    }
+
     .article-body {
       font-size: 1.05rem;
       color: #111827;
@@ -101,8 +116,14 @@
       <article class="article-main-card">
         <h1 id="article-title" class="article-main-title">Φορτώνω το άρθρο…</h1>
 
+        <!-- Εικόνα άρθρου -->
         <div id="article-image-wrapper" class="article-image-wrapper" style="display:none;">
           <img id="article-image" class="article-image" alt="Εικόνα άρθρου" />
+        </div>
+
+        <!-- Βίντεο άρθρου (iframe ή <video>) -->
+        <div id="article-video-wrapper" class="article-video-wrapper" style="display:none;">
+          <div id="article-video-container"></div>
         </div>
 
         <div id="article-body" class="article-body">
@@ -148,6 +169,8 @@
       const sourceEl = document.getElementById("article-source");
       const imageWrapper = document.getElementById("article-image-wrapper");
       const imageEl = document.getElementById("article-image");
+      const videoWrapper = document.getElementById("article-video-wrapper");
+      const videoContainer = document.getElementById("article-video-container");
       const listenBtn = document.getElementById("listen-btn");
 
       if (!idParam) {
@@ -188,10 +211,44 @@
         titleEl.textContent = displayTitle;
         bodyEl.innerHTML = cleaned.replace(/\n/g, "<br/>");
 
+        // Εικόνα
         if (article.imageUrl) {
           imageEl.src = article.imageUrl;
           imageEl.alt = displayTitle || "Εικόνα άρθρου";
           imageWrapper.style.display = "block";
+        }
+
+        // Βίντεο (αν υπάρχει videoUrl στο JSON)
+        if (article.videoUrl) {
+          let node;
+          const url = article.videoUrl;
+
+          // Αν φαίνεται σαν αρχείο βίντεο (mp4, webm, ogg)
+          if (/\.(mp4|webm|ogg)(\?|$)/i.test(url)) {
+            node = document.createElement("video");
+            node.className = "article-video";
+            node.controls = true;
+
+            const source = document.createElement("source");
+            source.src = url;
+            node.appendChild(source);
+          } else {
+            // Αλλιώς το χειριζόμαστε σαν embed (iframe),
+            // π.χ. YouTube, TruthSocial embed, κ.λπ.
+            node = document.createElement("iframe");
+            node.className = "article-video";
+            node.src = url;
+            node.loading = "lazy";
+            node.allowFullscreen = true;
+            node.setAttribute("frameborder", "0");
+            node.setAttribute(
+              "allow",
+              "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            );
+          }
+
+          videoContainer.appendChild(node);
+          videoWrapper.style.display = "block";
         }
 
         const sourceName = article.sourceName || "Πηγή";
