@@ -17,7 +17,7 @@
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background-color: #ffffff;
-      font-size: 18px; /* λίγο πιο μεγάλα γράμματα */
+      font-size: 18px;
       line-height: 1.6;
     }
 
@@ -37,38 +37,6 @@
       font-size: 1rem;
       margin-top: 0.3rem;
       opacity: 0.95;
-    }
-
-    /* παλιά article-card, κρατάμε σε περίπτωση που χρειαστεί αλλού */
-    .article-card {
-      border-radius: 16px;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-      border: 1px solid #e5e7eb;
-      background-color: #f9fafb;
-    }
-
-    .article-card h2 {
-      font-size: 1.25rem;
-      font-weight: 700;
-    }
-
-    .article-text {
-      font-size: 1rem;
-    }
-
-    .source {
-      font-size: 0.9rem;
-      color: #4b5563;
-    }
-
-    #status {
-      text-align: center;
-      color: #4b5563;
-      margin-bottom: 1rem;
-    }
-
-    .btn-listen {
-      font-size: 0.95rem;
     }
 
     /* ===== Weather widget ===== */
@@ -100,40 +68,11 @@
       margin-top: 0.15rem;
     }
 
-    /* ===== Κάρτες άρθρων (χωρίς εικόνα) ===== */
-    .article-card-grid {
-      cursor: pointer;
-      border-radius: 18px;
-      padding: 0.9rem 1rem;
-      background-color: #ffffff;
-      box-shadow: 0 3px 8px rgba(15, 23, 42, 0.08);
-      transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
-      border: 1px solid #e5e7eb;
-    }
-
-    .article-card-grid:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.16);
-      background-color: #f9fafb;
-    }
-
-    .article-card-title {
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: #111827;
-      margin-bottom: 0.25rem;
-    }
-
-    .article-card-meta {
-      font-size: 0.85rem;
-      color: #6b7280;
-    }
-
-    /* ===== Πλέγμα κατηγοριών στην αρχική ===== */
+    /* ===== Πλέγμα κατηγοριών ===== */
     .category-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.75rem;
+      gap: 1rem;
     }
 
     @media (min-width: 768px) {
@@ -150,32 +89,51 @@
 
     .category-tile {
       border-radius: 18px;
-      padding: 0.9rem 1rem;
       background: #eff6ff;
       border: 1px solid #bfdbfe;
-      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.12);
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.16);
+      overflow: hidden;
       transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
     }
 
     .category-tile:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.22);
       background: #dbeafe;
     }
 
-    .category-tile.active {
-      background: #1d4ed8;
-      color: #ffffff;
-      border-color: #1d4ed8;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.45);
+    .category-tile-link {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .category-thumbnail-wrapper {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      background: #dbeafe;
+      overflow: hidden;
+    }
+
+    .category-thumbnail {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .category-tile-body {
+      padding: 0.75rem 0.9rem 0.9rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
     }
 
     .category-tile-emoji {
       font-size: 1.5rem;
+      margin-bottom: 0.15rem;
     }
 
     .category-tile-title {
@@ -185,12 +143,7 @@
 
     .category-tile-subtitle {
       font-size: 0.9rem;
-      opacity: 0.9;
-    }
-
-    /* Κρύβουμε την παλιά σειρά με κουμπιά κατηγοριών, αλλά την κρατάμε στο DOM */
-    .category-buttons-row {
-      display: none;
+      opacity: 0.95;
     }
   </style>
 </head>
@@ -213,7 +166,7 @@
   <!-- Περιεχόμενο -->
   <main class="container mb-5">
 
-    <!-- 🔆 WEATHER WIDGET ΠΑΝΩ ΑΠΟ ΤΙΣ ΕΙΔΗΣΕΙΣ -->
+    <!-- 🔆 WEATHER WIDGET -->
     <section class="mb-4">
       <div class="card weather-card">
         <div class="card-body d-flex align-items-center gap-3">
@@ -230,370 +183,228 @@
       </div>
     </section>
 
-    <!-- Πλέγμα κατηγοριών -->
+    <!-- ΜΕΝΟΥ ΚΑΤΗΓΟΡΙΩΝ -->
     <section class="mb-4">
       <h2 class="h5 mb-3">Διάλεξε κατηγορία ειδήσεων</h2>
 
-      <!-- Παλιό σύστημα κουμπιών, κρυμμένο -->
-      <div
-        id="category-filters"
-        class="d-flex flex-wrap gap-2 category-buttons-row"
-        aria-hidden="true"
-      >
-        <button
-          type="button"
-          class="btn btn-sm btn-primary category-btn"
-          data-category="all"
-        >
-          Όλες οι ειδήσεις
-        </button>
+      <!-- 🔽 εδώ βάζεις τα free for commercial use thumbnails στο /images/categories/... -->
+      <div class="category-grid">
 
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-primary category-btn"
-          data-category="serious"
-        >
-          Σοβαρές ειδήσεις
-        </button>
-
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-primary category-btn"
-          data-category="sports"
-        >
-          Αθλητισμός
-        </button>
-
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-primary category-btn"
-          data-category="movies"
-        >
-          Ταινίες
-        </button>
-
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-primary category-btn"
-          data-category="series"
-        >
-          Σειρές
-        </button>
-
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-primary category-btn"
-          data-category="music"
-        >
-          Μουσική
-        </button>
-
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-primary category-btn"
-          data-category="theatre"
-        >
-          Θέατρο
-        </button>
-
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-primary category-btn"
-          data-category="fun"
-        >
-          Διασκέδαση
-        </button>
-
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-primary category-btn"
-          data-category="other"
-        >
-          Άλλες ειδήσεις
-        </button>
-      </div>
-
-      <!-- Νέο πλέγμα καρτών κατηγοριών, με σειρά όπως ζήτησες -->
-      <div class="category-grid" id="category-grid">
-        <!-- 1. Σοβαρές ειδήσεις (πάντα πρώτες) -->
-        <div class="category-tile active" data-category="serious" role="button" tabindex="0">
-          <div class="category-tile-emoji">⚠️</div>
-          <div class="category-tile-title">Σοβαρές ειδήσεις</div>
-          <div class="category-tile-subtitle">
-            ατυχήματα, υγεία, ασφάλεια, σημαντικά γεγονότα
-          </div>
-        </div>
+        <!-- 1. Σοβαρές ειδήσεις -->
+        <article class="category-tile">
+          <a
+            class="category-tile-link"
+            href="category.html?category=serious"
+          >
+            <div class="category-thumbnail-wrapper">
+              <img
+                src="images/categories/serious.jpg"
+                alt="Σοβαρές ειδήσεις"
+                class="category-thumbnail"
+              />
+            </div>
+            <div class="category-tile-body">
+              <div class="category-tile-emoji">⚠️</div>
+              <div class="category-tile-title">Σοβαρές ειδήσεις</div>
+              <div class="category-tile-subtitle">
+                Ατυχήματα, υγεία, ασφάλεια, σημαντικά γεγονότα
+              </div>
+            </div>
+          </a>
+        </article>
 
         <!-- 2. Αθλητισμός -->
-        <div class="category-tile" data-category="sports" role="button" tabindex="0">
-          <div class="category-tile-emoji">🏅</div>
-          <div class="category-tile-title">Αθλητισμός</div>
-          <div class="category-tile-subtitle">
-            ποδόσφαιρο, μπάσκετ και άλλα
-          </div>
-        </div>
+        <article class="category-tile">
+          <a
+            class="category-tile-link"
+            href="category.html?category=sports"
+          >
+            <div class="category-thumbnail-wrapper">
+              <img
+                src="images/categories/sports.jpg"
+                alt="Αθλητισμός"
+                class="category-thumbnail"
+              />
+            </div>
+            <div class="category-tile-body">
+              <div class="category-tile-emoji">🏅</div>
+              <div class="category-tile-title">Αθλητισμός</div>
+              <div class="category-tile-subtitle">
+                Ποδόσφαιρο, μπάσκετ και άλλα
+              </div>
+            </div>
+          </a>
+        </article>
 
         <!-- 3. Ταινίες -->
-        <div class="category-tile" data-category="movies" role="button" tabindex="0">
-          <div class="category-tile-emoji">🎬</div>
-          <div class="category-tile-title">Ταινίες</div>
-          <div class="category-tile-subtitle">
-            νέες ταινίες και σινεμά
-          </div>
-        </div>
+        <article class="category-tile">
+          <a
+            class="category-tile-link"
+            href="category.html?category=movies"
+          >
+            <div class="category-thumbnail-wrapper">
+              <img
+                src="images/categories/movies.jpg"
+                alt="Ταινίες"
+                class="category-thumbnail"
+              />
+            </div>
+            <div class="category-tile-body">
+              <div class="category-tile-emoji">🎬</div>
+              <div class="category-tile-title">Ταινίες</div>
+              <div class="category-tile-subtitle">
+                Νέες ταινίες και σινεμά
+              </div>
+            </div>
+          </a>
+        </article>
 
         <!-- 4. Σειρές -->
-        <div class="category-tile" data-category="series" role="button" tabindex="0">
-          <div class="category-tile-emoji">📺</div>
-          <div class="category-tile-title">Σειρές</div>
-          <div class="category-tile-subtitle">
-            σειρές στην τηλεόραση και στις πλατφόρμες
-          </div>
-        </div>
+        <article class="category-tile">
+          <a
+            class="category-tile-link"
+            href="category.html?category=series"
+          >
+            <div class="category-thumbnail-wrapper">
+              <img
+                src="images/categories/series.jpg"
+                alt="Σειρές"
+                class="category-thumbnail"
+              />
+            </div>
+            <div class="category-tile-body">
+              <div class="category-tile-emoji">📺</div>
+              <div class="category-tile-title">Σειρές</div>
+              <div class="category-tile-subtitle">
+                Σειρές στην τηλεόραση και στις πλατφόρμες
+              </div>
+            </div>
+          </a>
+        </article>
 
         <!-- 5. Μουσική -->
-        <div class="category-tile" data-category="music" role="button" tabindex="0">
-          <div class="category-tile-emoji">🎵</div>
-          <div class="category-tile-title">Μουσική</div>
-          <div class="category-tile-subtitle">
-            τραγούδια, συναυλίες, καλλιτέχνες
-          </div>
-        </div>
+        <article class="category-tile">
+          <a
+            class="category-tile-link"
+            href="category.html?category=music"
+          >
+            <div class="category-thumbnail-wrapper">
+              <img
+                src="images/categories/music.jpg"
+                alt="Μουσική"
+                class="category-thumbnail"
+              />
+            </div>
+            <div class="category-tile-body">
+              <div class="category-tile-emoji">🎵</div>
+              <div class="category-tile-title">Μουσική</div>
+              <div class="category-tile-subtitle">
+                Τραγούδια, συναυλίες, καλλιτέχνες
+              </div>
+            </div>
+          </a>
+        </article>
 
         <!-- 6. Θέατρο -->
-        <div class="category-tile" data-category="theatre" role="button" tabindex="0">
-          <div class="category-tile-emoji">🎭</div>
-          <div class="category-tile-title">Θέατρο</div>
-          <div class="category-tile-subtitle">
-            παραστάσεις και πολιτισμός
-          </div>
-        </div>
+        <article class="category-tile">
+          <a
+            class="category-tile-link"
+            href="category.html?category=theatre"
+          >
+            <div class="category-thumbnail-wrapper">
+              <img
+                src="images/categories/theatre.jpg"
+                alt="Θέατρο"
+                class="category-thumbnail"
+              />
+            </div>
+            <div class="category-tile-body">
+              <div class="category-tile-emoji">🎭</div>
+              <div class="category-tile-title">Θέατρο</div>
+              <div class="category-tile-subtitle">
+                Παραστάσεις και πολιτισμός
+              </div>
+            </div>
+          </a>
+        </article>
 
         <!-- 7. Διασκέδαση -->
-        <div class="category-tile" data-category="fun" role="button" tabindex="0">
-          <div class="category-tile-emoji">🎉</div>
-          <div class="category-tile-title">Διασκέδαση</div>
-          <div class="category-tile-subtitle">
-            εκδηλώσεις, φεστιβάλ, βόλτες
-          </div>
-        </div>
+        <article class="category-tile">
+          <a
+            class="category-tile-link"
+            href="category.html?category=fun"
+          >
+            <div class="category-thumbnail-wrapper">
+              <img
+                src="images/categories/fun.jpg"
+                alt="Διασκέδαση"
+                class="category-thumbnail"
+              />
+            </div>
+            <div class="category-tile-body">
+              <div class="category-tile-emoji">🎉</div>
+              <div class="category-tile-title">Διασκέδαση</div>
+              <div class="category-tile-subtitle">
+                Εκδηλώσεις, φεστιβάλ, βόλτες
+              </div>
+            </div>
+          </a>
+        </article>
 
         <!-- 8. Άλλες ειδήσεις -->
-        <div class="category-tile" data-category="other" role="button" tabindex="0">
-          <div class="category-tile-emoji">🧩</div>
-          <div class="category-tile-title">Άλλες ειδήσεις</div>
-          <div class="category-tile-subtitle">
-            ό,τι δεν ταιριάζει σε άλλη κατηγορία
-          </div>
-        </div>
+        <article class="category-tile">
+          <a
+            class="category-tile-link"
+            href="category.html?category=other"
+          >
+            <div class="category-thumbnail-wrapper">
+              <img
+                src="images/categories/other.jpg"
+                alt="Άλλες ειδήσεις"
+                class="category-thumbnail"
+              />
+            </div>
+            <div class="category-tile-body">
+              <div class="category-tile-emoji">🧩</div>
+              <div class="category-tile-title">Άλλες ειδήσεις</div>
+              <div class="category-tile-subtitle">
+                Ό,τι δεν ταιριάζει σε άλλη κατηγορία
+              </div>
+            </div>
+          </a>
+        </article>
 
-        <!-- 9. Όλες οι ειδήσεις (τελευταία επιλογή) -->
-        <div class="category-tile" data-category="all" role="button" tabindex="0">
-          <div class="category-tile-emoji">🗂️</div>
-          <div class="category-tile-title">Όλες οι ειδήσεις</div>
-          <div class="category-tile-subtitle">
-            δες όλες μαζί
-          </div>
-        </div>
+        <!-- 9. Όλες οι ειδήσεις -->
+        <article class="category-tile">
+          <a
+            class="category-tile-link"
+            href="category.html?category=all"
+          >
+            <div class="category-thumbnail-wrapper">
+              <img
+                src="images/categories/all.jpg"
+                alt="Όλες οι ειδήσεις"
+                class="category-thumbnail"
+              />
+            </div>
+            <div class="category-tile-body">
+              <div class="category-tile-emoji">🗂️</div>
+              <div class="category-tile-title">Όλες οι ειδήσεις</div>
+              <div class="category-tile-subtitle">
+                Δες όλες μαζί
+              </div>
+            </div>
+          </a>
+        </article>
+
       </div>
     </section>
-
-    <p id="status">Φορτώνω τις ειδήσεις…</p>
-
-    <!-- Grid με άρθρα: 2 κάρτες ανά σειρά σε md+ -->
-    <div id="news" class="row g-3">
-      <!-- εδώ θα μπουν οι κάρτες -->
-    </div>
   </main>
 
-  <!-- 👇 εξωτερικό αρχείο για το widget καιρού -->
+  <!-- Widget καιρού -->
   <script src="weather-widget.js"></script>
-
-  <!-- 👇 λογική μόνο για τις ειδήσεις + κατηγορίες -->
   <script>
-    let globalArticles = [];
-    // default κατηγορία: σοβαρές ειδήσεις
-    let activeCategory = "serious";
-
-    function cleanMarkdown(text) {
-      if (!text) return "";
-      return text
-        .replace(/\*\*(.+?)\*\*/g, "$1")
-        .replace(/###\s*/g, "")
-        .trim();
-    }
-
-    // προς το παρόν δεν το χρησιμοποιούμε στην αρχική, αλλά το κρατάω
-    // σε περίπτωση που θες κουμπί "Άκου" και στη λίστα
-    function speak(text) {
-      if (!("speechSynthesis" in window)) {
-        alert("Ο περιηγητής δεν υποστηρίζει ανάγνωση κειμένου.");
-        return;
-      }
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "el-GR"; // ελληνικά, αν υπάρχουν διαθέσιμες φωνές
-      window.speechSynthesis.speak(utterance);
-    }
-
-    function renderArticles() {
-      const container = document.getElementById("news");
-      const statusEl = document.getElementById("status");
-      container.innerHTML = "";
-
-      const filtered = globalArticles.filter((a) => {
-        // extra safety: αν για κάποιο λόγο έρθει isSensitive=true από backend, δεν το δείχνουμε
-        if (a.isSensitive) return false;
-
-        if (activeCategory === "all") return true;
-        const cat = (a.category || "other").toLowerCase();
-        return cat === activeCategory.toLowerCase();
-      });
-
-      if (!filtered.length) {
-        statusEl.textContent = "Δεν υπάρχουν ειδήσεις σε αυτή την κατηγορία.";
-        return;
-      } else {
-        statusEl.textContent = "";
-      }
-
-      filtered.forEach((a, index) => {
-        // 2 κάρτες ανά σειρά: col-12 στο κινητό, col-md-6 σε μεγαλύτερες οθόνες
-        const col = document.createElement("div");
-        col.className = "col-12 col-md-6";
-
-        const card = document.createElement("article");
-        card.className = "article-card-grid h-100";
-        card.tabIndex = 0; // ώστε να πατιέται και με Enter
-        card.setAttribute("role", "button");
-
-        // Τίτλος – ιδανικά παραφρασμένος από LLM
-        const titleEl = document.createElement("h2");
-        titleEl.className = "article-card-title";
-        const displayTitle = a.simpleTitle || a.title || "";
-        titleEl.textContent = displayTitle;
-        card.appendChild(titleEl);
-
-        // Προαιρετικά: πηγή, αν τη δίνεις από το backend
-        if (a.sourceName) {
-          const metaEl = document.createElement("div");
-          metaEl.className = "article-card-meta";
-          metaEl.textContent = "Πηγή: " + a.sourceName;
-          card.appendChild(metaEl);
-        }
-
-        col.appendChild(card);
-        container.appendChild(col);
-
-        // id άρθρου: αν έχεις a.id από backend, χρησιμοποίησέ το, αλλιώς fallback στο index
-        const articleId = a.id != null ? a.id : index;
-
-        const goToArticle = () => {
-          window.location.href =
-            "article.html?id=" + encodeURIComponent(articleId);
-        };
-
-        card.addEventListener("click", goToArticle);
-        card.addEventListener("keypress", (e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            goToArticle();
-          }
-        });
-      });
-    }
-
-    async function loadNews() {
-      const statusEl = document.getElementById("status");
-
-      try {
-        const res = await fetch("news.json?cachebust=" + Date.now());
-        if (!res.ok) {
-          throw new Error("HTTP " + res.status);
-        }
-
-        const data = await res.json();
-        const articles = (data && data.articles) || [];
-        globalArticles = articles;
-
-        if (!articles.length) {
-          statusEl.textContent = "Προς το παρόν δεν υπάρχουν ειδήσεις.";
-          return;
-        }
-
-        // αφού έχουμε articles, κάνουμε render με βάση την activeCategory
-        setCategory(activeCategory);
-      } catch (err) {
-        console.error(err);
-        statusEl.textContent =
-          "Προέκυψε πρόβλημα κατά τη φόρτωση των ειδήσεων: " + err.message;
-      }
-    }
-
-    // Κεντρική συνάρτηση αλλαγής κατηγορίας
-    function setCategory(newCategory) {
-      activeCategory = newCategory;
-
-      // ενημέρωση παλιών (κρυφών) κουμπιών
-      const buttons = document.querySelectorAll(".category-btn");
-      buttons.forEach((b) => {
-        const cat = b.dataset.category || "all";
-        if (cat === newCategory) {
-          b.classList.remove("btn-outline-primary");
-          b.classList.add("btn-primary", "active");
-        } else {
-          b.classList.remove("btn-primary", "active");
-          b.classList.add("btn-outline-primary");
-        }
-      });
-
-      // ενημέρωση καρτών πλέγματος
-      const tiles = document.querySelectorAll(".category-tile");
-      tiles.forEach((tile) => {
-        const cat = tile.dataset.category || "all";
-        tile.classList.toggle("active", cat === newCategory);
-      });
-
-      renderArticles();
-
-      // σε μικρές οθόνες κάνουμε scroll στα άρθρα
-      const newsSection = document.getElementById("news");
-      if (newsSection && window.innerWidth < 768) {
-        newsSection.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    }
-
-    function initCategoryFilters() {
-      const buttons = document.querySelectorAll(".category-btn");
-      buttons.forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const cat = btn.dataset.category || "all";
-          setCategory(cat);
-        });
-      });
-
-      const tiles = document.querySelectorAll(".category-tile");
-      tiles.forEach((tile) => {
-        tile.addEventListener("click", () => {
-          const cat = tile.dataset.category || "all";
-          setCategory(cat);
-        });
-        tile.addEventListener("keypress", (e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            const cat = tile.dataset.category || "all";
-            setCategory(cat);
-          }
-        });
-      });
-
-      // ξεκινάμε από τις "Σοβαρές ειδήσεις"
-      setCategory("serious");
-    }
-
-    // Εκκίνηση: περιμένουμε να φορτώσει το DOM
     document.addEventListener("DOMContentLoaded", () => {
-      loadNews();
-      initCategoryFilters();
       if (window.initWeatherWidget) {
         window.initWeatherWidget();
       }
