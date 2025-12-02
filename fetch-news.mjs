@@ -254,6 +254,37 @@ function normalizeTitleForGrouping(title) {
     .trim();
 }
 
+// ⚙️ Ρυθμίσεις για πιο "χαλαρή" ομαδοποίηση τίτλων
+const TITLE_SIMILARITY_THRESHOLD = 0.35;
+
+const TITLE_STOPWORDS = new Set([
+  "στην",
+  "στον",
+  "στη",
+  "στο",
+  "για",
+  "και",
+  "με",
+  "κατά",
+  "κατα",
+  "από",
+  "απο",
+  "επί",
+  "εις",
+  "των",
+  "των",
+  "στοιχεία",
+  "έκτακτο",
+  "εκτακτο",
+  "ειδηση",
+  "είδηση",
+  "ειδήσεις",
+  "νεα",
+  "νέα",
+  "σημερα",
+  "σήμερα",
+]);
+
 // Κλήση στο AI για απλοποίηση + κατηγοριοποίηση + παραφρασμένο τίτλο
 // 🆕 ΠΛΕΟΝ παίρνει ΟΛΟ το "θέμα" (1 ή περισσότερα άρθρα).
 async function simplifyAndClassifyText(topicGroup) {
@@ -267,7 +298,9 @@ async function simplifyAndClassifyText(topicGroup) {
   parts.push(
     "Παρακάτω θα δεις πληροφορίες για ΜΙΑ είδηση, από ΕΝΑ ή ΠΕΡΙΣΣΟΤΕΡΑ άρθρα.\n" +
       "Όλα τα άρθρα μιλούν για το ίδιο γεγονός. " +
-      "Χρησιμοποίησε όλες αυτές τις πληροφορίες σαν υλικό για να γράψεις ΕΝΑ νέο κείμενο σε πολύ απλά ελληνικά."
+      "Χρησιμοποίησε όλες αυτές τις πληροφορίες σαν υλικό για να γράψεις ΕΝΑ νέο κείμενο σε πολύ απλά ελληνικά.\n" +
+      "ΜΗΝ γράφεις ξεχωριστά κομμάτια για κάθε άρθρο (π.χ. 'Στο Άρθρο 1 λέει...'). " +
+      "Πρέπει να είναι ΕΝΑ ενιαίο κείμενο."
   );
 
   articles.forEach((article, index) => {
@@ -380,7 +413,12 @@ function groupArticlesByTopic(rawArticles) {
     return new Set(
       norm
         .split(" ")
-        .filter((w) => w.length > 3) // πετάμε πολύ μικρές/ασήμαντες λέξεις
+        .filter((w) => {
+          const word = w.trim();
+          if (word.length <= 3) return false;
+          if (TITLE_STOPWORDS.has(word)) return false;
+          return true;
+        })
     );
   }
 
@@ -411,7 +449,7 @@ function groupArticlesByTopic(rawArticles) {
     }
 
     // Κατώφλι ομοιότητας: αν μοιράζονται αρκετές λέξεις, τα θεωρούμε ίδιο θέμα
-    if (bestGroup && bestScore >= 0.6) {
+    if (bestGroup && bestScore >= TITLE_SIMILARITY_THRESHOLD) {
       bestGroup.articles.push(article);
       // ενημερώνουμε και το word set της ομάδας (ένωση)
       for (const w of titleWords) {
@@ -435,9 +473,10 @@ function groupArticlesByTopic(rawArticles) {
     const primary = group.articles[0];
 
     // publishedAt = πιο πρόσφατο από την ομάδα
-    let latestPublishedAt = primary.publishedAt;
+    let latestPublishedAt = primary.publishedAt || null;
     for (const a of group.articles) {
-      if (new Date(a.publishedAt) > new Date(latestPublishedAt)) {
+      if (!a.publishedAt) continue;
+      if (!latestPublishedAt || new Date(a.publishedAt) > new Date(latestPublishedAt)) {
         latestPublishedAt = a.publishedAt;
       }
     }
@@ -563,20 +602,49 @@ async function run() {
     const categoryKey = normalizeCategory(result.rawCategory);
 
     const primary = topic.articles[0];
-    const sources = topic.articles.map((a) => ({
-      sourceName: a.sourceName,
-      sourceUrl: a.sourceUrl,
-    }));
+
+    // 🧹 Αφαιρούμε διπλότυπες πηγές (ίδιο όνομα & link)
+    const sourcesMap = new Map();
+    for (const a of topic.articles) {
+      const name = a.sourceName || "Άγνωστη πηγή";
+      const url = a.sourceUrl || "";
+      const key = name + "|" + url;
+      if (!sourcesMap.has(key)) {
+        sourcesMap.set(key, { sourceName: name, sourceUrl: url });
+      }
+    }
+    const sources = Array.from(sourcesMap.values());
+
+    // Για συμβατότητα με το frontend:
+    // - αν έχουμε μία πηγή → δείχνουμε αυτήν
+    // - αν έχουμε πολλές → ενώνουμε τα ονόματα με κόμμα
+    let mainSourceName = primary.sourceName || "Πηγή";
+    let mainSourceUrl = primary.sourceUrl || "";
+
+    if (sources.length === 1) {
+      mainSourceName = sources[0].sourceName;
+      mainSourceUrl = sources[0].sourceUrl;
+    } else if (sources.length > 1) {
+      mainSourceName = sources
+        .map((s) => s.sourceName)
+        .filter(Boolean)
+        .join(", ");
+      mainSourceUrl = sources[0].sourceUrl || primary.sourceUrl || "";
+    }
 
     allArticles.push({
       id: topic.id,
       title: topic.title, // αρχικός τίτλος (από το πρώτο άρθρο του θέματος)
       simpleTitle: result.simplifiedTitle || topic.title,
       simpleText: result.simplifiedText,
-      sourceName: primary.sourceName,
-      sourceUrl: primary.sourceUrl,
-      // 🆕 ΠΛΗΡΗΣ λίστα με 2–3+ πηγές
+
+      // "συνοπτική" πηγή για παλιό UI
+      sourceName: mainSourceName,
+      sourceUrl: mainSourceUrl,
+
+      // 🆕 Πλήρης λίστα με όλες τις πηγές που χρησιμοποιήθηκαν για τη σύνθεση
       sources,
+
       category: categoryKey, // ✅ μία από τις CATEGORY_KEYS
       isSensitive: false,
       imageUrl: topic.imageUrl,
