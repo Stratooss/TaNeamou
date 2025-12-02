@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8" />
+  <title>Εύκολες Ειδήσεις – Κατηγορία</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: #ffffff;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+
+    .site-header {
+      background: #1d4ed8;
+      color: white;
+      padding: 1.2rem 0;
+      margin-bottom: 1.2rem;
+    }
+
+    .site-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+
+    .site-subtitle {
+      font-size: 0.95rem;
+      margin-top: 0.3rem;
+      opacity: 0.95;
+    }
+
+    .article-card-grid {
+      border-radius: 16px;
+      padding: 0.9rem 1rem;
+      background-color: #ffffff;
+      box-shadow: 0 3px 8px rgba(15, 23, 42, 0.08);
+      border: 1px solid #e5e7eb;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+      cursor: pointer;
+    }
+
+    .article-card-grid:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.18);
+      background-color: #f9fafb;
+    }
+
+    .article-card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+      color: #111827;
+    }
+
+    .article-card-snippet {
+      font-size: 0.95rem;
+      color: #374151;
+      margin-bottom: 0.35rem;
+    }
+
+    .article-card-meta {
+      font-size: 0.85rem;
+      color: #6b7280;
+    }
+
+    #status {
+      text-align: center;
+      color: #4b5563;
+      margin: 1rem 0;
+    }
+
+    .back-link {
+      font-size: 0.95rem;
+      margin-bottom: 0.75rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Επάνω μπάρα -->
+  <header class="site-header">
+    <div class="container">
+      <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+        <div>
+          <div class="site-title">📰 Εύκολες Ειδήσεις</div>
+          <div class="site-subtitle">Οι ειδήσεις σε απλά ελληνικά</div>
+        </div>
+        <div class="text-md-end">
+          <span class="badge bg-light text-dark">Για άτομα με νοητική υστέρηση</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container mb-5">
+    <a href="index.html" class="back-link">
+      ← Πίσω στο μενού
+    </a>
+
+    <h1 id="category-title" class="h4 mb-2">Ειδήσεις</h1>
+    <p id="category-description" class="mb-3 text-muted"></p>
+
+    <p id="status">Φορτώνω τις ειδήσεις…</p>
+
+    <div id="news" class="row g-3"></div>
+  </main>
+
+  <script>
+    const CATEGORY_LABELS = {
+      serious: {
+        title: "Σοβαρές ειδήσεις",
+        description: "Ατυχήματα, υγεία, ασφάλεια και άλλα σημαντικά γεγονότα."
+      },
+      sports: {
+        title: "Αθλητισμός",
+        description: "Ποδόσφαιρο, μπάσκετ και άλλα αθλήματα."
+      },
+      movies: {
+        title: "Ταινίες",
+        description: "Νέες ταινίες και νέα από τον κινηματογράφο."
+      },
+      series: {
+        title: "Σειρές",
+        description: "Σειρές στην τηλεόραση και στις πλατφόρμες."
+      },
+      music: {
+        title: "Μουσική",
+        description: "Τραγούδια, συναυλίες και καλλιτέχνες."
+      },
+      theatre: {
+        title: "Θέατρο",
+        description: "Θεατρικές παραστάσεις και πολιτιστικά."
+      },
+      fun: {
+        title: "Διασκέδαση",
+        description: "Εκδηλώσεις, φεστιβάλ και βόλτες."
+      },
+      other: {
+        title: "Άλλες ειδήσεις",
+        description: "Ειδήσεις που δεν ταιριάζουν στις άλλες κατηγορίες."
+      },
+      all: {
+        title: "Όλες οι ειδήσεις",
+        description: "Όλες οι ειδήσεις μαζί σε μία λίστα."
+      }
+    };
+
+    let globalArticles = [];
+    let activeCategory = "all";
+
+    function getQueryCategory() {
+      const params = new URLSearchParams(window.location.search);
+      const cat = (params.get("category") || "all").toLowerCase();
+      return CATEGORY_LABELS[cat] ? cat : "all";
+    }
+
+    function cleanMarkdown(text) {
+      if (!text) return "";
+      return text
+        .replace(/\*\*(.+?)\*\*/g, "$1")
+        .replace(/###\s*/g, "")
+        .trim();
+    }
+
+    function shortText(text, maxLen = 220) {
+      if (!text) return "";
+      if (text.length <= maxLen) return text;
+      return text.slice(0, maxLen).trim() + "…";
+    }
+
+    function renderArticles() {
+      const container = document.getElementById("news");
+      const statusEl = document.getElementById("status");
+      container.innerHTML = "";
+
+      let filtered = globalArticles.filter(a => !a.isSensitive);
+
+      if (activeCategory !== "all") {
+        filtered = filtered.filter(a => {
+          const cat = (a.category || "other").toLowerCase();
+          return cat === activeCategory;
+        });
+      }
+
+      if (!filtered.length) {
+        statusEl.textContent = "Δεν υπάρχουν ειδήσεις σε αυτή την κατηγορία.";
+        return;
+      } else {
+        statusEl.textContent = "";
+      }
+
+      filtered.forEach((a) => {
+        const col = document.createElement("div");
+        col.className = "col-12 col-md-6";
+
+        const card = document.createElement("article");
+        card.className = "article-card-grid h-100";
+        card.tabIndex = 0;
+        card.setAttribute("role", "button");
+
+        const titleEl = document.createElement("h2");
+        titleEl.className = "article-card-title";
+        const displayTitle = a.simpleTitle || a.title || "";
+        titleEl.textContent = displayTitle;
+        card.appendChild(titleEl);
+
+        const snippetEl = document.createElement("p");
+        snippetEl.className = "article-card-snippet";
+        const rawText = cleanMarkdown(a.simpleText || a.text || "");
+        snippetEl.textContent = shortText(rawText);
+        card.appendChild(snippetEl);
+
+        const metaEl = document.createElement("div");
+        metaEl.className = "article-card-meta";
+        const parts = [];
+
+        if (a.sourceName) {
+          parts.push("Πηγή: " + a.sourceName);
+        }
+        if (a.publishedAt) {
+          parts.push("Ημ/νία: " + a.publishedAt);
+        }
+
+        metaEl.textContent = parts.join(" · ");
+        card.appendChild(metaEl);
+
+        col.appendChild(card);
+        container.appendChild(col);
+
+        // id άρθρου: είτε από backend είτε θέση στον global πίνακα
+        const articleIndex = globalArticles.indexOf(a);
+        const articleId = a.id != null ? a.id : articleIndex;
+
+        const goToArticle = () => {
+          if (articleId == null || articleId < 0) return;
+          window.location.href =
+            "article.html?id=" + encodeURIComponent(articleId);
+        };
+
+        card.addEventListener("click", goToArticle);
+        card.addEventListener("keypress", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            goToArticle();
+          }
+        });
+      });
+    }
+
+    async function loadNews() {
+      const statusEl = document.getElementById("status");
+      try {
+        const res = await fetch("news.json?cachebust=" + Date.now());
+        if (!res.ok) {
+          throw new Error("HTTP " + res.status);
+        }
+
+        const data = await res.json();
+        globalArticles = (data && data.articles) || [];
+
+        if (!globalArticles.length) {
+          statusEl.textContent = "Προς το παρόν δεν υπάρχουν ειδήσεις.";
+          return;
+        }
+
+        renderArticles();
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent =
+          "Προέκυψε πρόβλημα κατά τη φόρτωση των ειδήσεων: " + err.message;
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      activeCategory = getQueryCategory();
+
+      const info = CATEGORY_LABELS[activeCategory];
+      document.getElementById("category-title").textContent = info.title;
+      document.getElementById("category-description").textContent =
+        info.description;
+
+      loadNews();
+    });
+  </script>
+</body>
+</html>
