@@ -23,16 +23,54 @@ export const CATEGORY_KEYS = [
 ];
 
 // RSS feeds που θα διαβάζουμε
-// Προς το παρόν μόνο ERT, αλλά εδώ θα προσθέτεις και άλλα.
-// Η κατηγοριοποίηση γίνεται από το LLM.
+// ⚠️ Πολλά από τα παρακάτω sites περιορίζουν τη χρήση (συχνά «μόνο για προσωπική χρήση»).
+// Εδώ τα βάζουμε τεχνικά για να δουλεύει το pipeline· για δημόσια/εμπορική χρήση
+// είναι καλό να έχεις ρητή άδεια από τα μέσα.
 const FEEDS = [
+  // Δημόσιος ραδιοτηλεοπτικός φορέας
   {
     url: "https://www.ertnews.gr/feed",
     sourceName: "ERT News",
   },
-  // αργότερα:
-  // { url: "https://www.athinorama.gr/feed", sourceName: "Athinorama" },
-  // { url: "https://www.culturenow.gr/feed", sourceName: "CultureNow" },
+
+  // 🔹 Μεγάλες εφημερίδες / portals
+  {
+    url: "https://www.tanea.gr/feed",
+    sourceName: "TA NEA",
+  },
+  {
+    // Όλα τα νέα από ΤΟ ΒΗΜΑ
+    url: "https://www.tovima.gr/feed",
+    // Εναλλακτικά (αν θες πιο «γεμάτο» feed): "https://www.tovima.gr/feed/allnews/"
+    sourceName: "TO BHMA",
+  },
+  {
+    // Γενική ροή του news.gr
+    url: "https://www.news.gr/rss.ashx",
+    sourceName: "News.gr",
+  },
+  {
+    url: "https://www.902.gr/feed/featured",
+    sourceName: "902.gr – Επιλεγμένα",
+  },
+  {
+    url: "https://www.newsbomb.gr/oles-oi-eidhseis?format=feed&type=rss",
+    sourceName: "Newsbomb.gr",
+  },
+  {
+    url: "https://www.protagon.gr/feed",
+    sourceName: "Protagon",
+  },
+
+  // 🔹 Αγγλόφωνη κάλυψη για Ελλάδα
+  {
+    url: "https://greekreporter.com/greece/feed",
+    sourceName: "Greek Reporter – Greece",
+  },
+
+  // Αν θέλεις αργότερα μπορείς να προσθέσεις κι άλλα:
+  // { url: "https://topontiki.gr/rss", sourceName: "Το Ποντίκι" },
+  // { url: "https://dimokratiki.gr/feed", sourceName: "Δημοκρατική Ρόδου" },
 ];
 
 // 🔹 Πηγές με πιο "ελαστικό" copyright (open data)
