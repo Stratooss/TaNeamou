@@ -1,296 +1,262 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="el">
-<head>
-  <meta charset="UTF-8" />
-  <title>Εύκολες Ειδήσεις – Κατηγορία</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <head>
+    <meta charset="utf-8" />
+    <title>Εύκολα Νέα – Κατηγορία</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
 
-  <style>
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background-color: #ffffff;
-      font-size: 18px;
-      line-height: 1.6;
-    }
+    <style>
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background-color: #ffffff;
+        font-size: 18px;
+        line-height: 1.6;
+      }
 
-    .site-header {
-      background: #1d4ed8;
-      color: white;
-      padding: 1.2rem 0;
-      margin-bottom: 1.2rem;
-    }
+      .site-header {
+        background: #1d4ed8;
+        color: white;
+        padding: 1.2rem 0;
+        margin-bottom: 1.2rem;
+      }
 
-    .site-title {
-      font-size: 1.6rem;
-      font-weight: 700;
-    }
+      .site-title {
+        font-size: 1.6rem;
+        font-weight: 700;
+      }
 
-    .site-subtitle {
-      font-size: 0.95rem;
-      margin-top: 0.3rem;
-      opacity: 0.95;
-    }
+      .site-subtitle {
+        font-size: 0.95rem;
+        opacity: 0.98;
+      }
 
-    .article-card-grid {
-      border-radius: 16px;
-      padding: 0.9rem 1rem;
-      background-color: #ffffff;
-      box-shadow: 0 3px 8px rgba(15, 23, 42, 0.08);
-      border: 1px solid #e5e7eb;
-      transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
-      cursor: pointer;
-    }
+      .article-card {
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        padding: 1rem 1.2rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.1);
+        background: #ffffff;
+      }
 
-    .article-card-grid:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.18);
-      background-color: #f9fafb;
-    }
+      .article-card h2 {
+        margin-top: 0;
+        font-size: 1.2rem;
+      }
 
-    .article-card-title {
-      font-size: 1.05rem;
-      font-weight: 700;
-      margin-bottom: 0.25rem;
-      color: #111827;
-    }
+      .meta {
+        font-size: 0.85rem;
+        color: #4b5563;
+        margin-bottom: 0.4rem;
+      }
 
-    .article-card-snippet {
-      font-size: 0.95rem;
-      color: #374151;
-      margin-bottom: 0.35rem;
-    }
+      .content {
+        white-space: pre-wrap;
+        font-size: 1rem;
+      }
 
-    .article-card-meta {
-      font-size: 0.85rem;
-      color: #6b7280;
-    }
-
-    #status {
-      text-align: center;
-      color: #4b5563;
-      margin: 1rem 0;
-    }
-
-    .back-link {
-      font-size: 0.95rem;
-      margin-bottom: 0.75rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      text-decoration: none;
-    }
-  </style>
-</head>
-<body>
-  <!-- Επάνω μπάρα -->
-  <header class="site-header">
-    <div class="container">
-      <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
-        <div>
-          <div class="site-title">📰 Εύκολες Ειδήσεις</div>
-          <div class="site-subtitle">Οι ειδήσεις σε απλά ελληνικά</div>
-        </div>
-        <div class="text-md-end">
-          <span class="badge bg-light text-dark">Για άτομα με νοητική υστέρηση</span>
+      .back-link {
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+        display: inline-block;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="site-header">
+      <div class="container">
+        <div class="d-flex flex-column align-items-start gap-1">
+          <div class="site-title">📰 Εύκολα Νέα</div>
+          <div class="site-subtitle">Τα νέα σε απλά ελληνικά</div>
         </div>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <main class="container mb-5">
-    <a href="index.html" class="back-link">
-      ← Πίσω στο μενού
-    </a>
+    <main class="container mb-5">
+      <a href="index.html" class="back-link">← Πίσω στο μενού κατηγοριών</a>
+      <h1 id="page-title" class="h4 mb-3">Ειδήσεις</h1>
 
-    <h1 id="category-title" class="h4 mb-2">Ειδήσεις</h1>
-    <p id="category-description" class="mb-3 text-muted"></p>
+      <div id="content"></div>
+    </main>
 
-    <p id="status">Φορτώνω τις ειδήσεις…</p>
-
-    <div id="news" class="row g-3"></div>
-  </main>
-
-  <script>
-    const CATEGORY_LABELS = {
-      serious: {
-        title: "Σοβαρές ειδήσεις",
-        description: "Ατυχήματα, υγεία, ασφάλεια και άλλα σημαντικά γεγονότα."
-      },
-      sports: {
-        title: "Αθλητισμός",
-        description: "Ποδόσφαιρο, μπάσκετ και άλλα αθλήματα."
-      },
-      movies: {
-        title: "Ταινίες",
-        description: "Νέες ταινίες και νέα από τον κινηματογράφο."
-      },
-      series: {
-        title: "Σειρές",
-        description: "Σειρές στην τηλεόραση και στις πλατφόρμες."
-      },
-      music: {
-        title: "Μουσική",
-        description: "Τραγούδια, συναυλίες και καλλιτέχνες."
-      },
-      theatre: {
-        title: "Θέατρο",
-        description: "Θεατρικές παραστάσεις και πολιτιστικά."
-      },
-      fun: {
-        title: "Διασκέδαση",
-        description: "Εκδηλώσεις, φεστιβάλ και βόλτες."
-      },
-      other: {
-        title: "Άλλες ειδήσεις",
-        description: "Ειδήσεις που δεν ταιριάζουν στις άλλες κατηγορίες."
-      },
-      all: {
-        title: "Όλες οι ειδήσεις",
-        description: "Όλες οι ειδήσεις μαζί σε μία λίστα."
-      }
-    };
-
-    let globalArticles = [];
-    let activeCategory = "all";
-
-    function getQueryCategory() {
+    <script>
       const params = new URLSearchParams(window.location.search);
-      const cat = (params.get("category") || "all").toLowerCase();
-      return CATEGORY_LABELS[cat] ? cat : "all";
-    }
+      const category = params.get("category") || "serious";
 
-    function cleanMarkdown(text) {
-      if (!text) return "";
-      return text
-        .replace(/\*\*(.+?)\*\*/g, "$1")
-        .replace(/###\s*/g, "")
-        .trim();
-    }
+      const LIFESTYLE_CATEGORIES = ["sports", "movies", "music", "theatre", "series", "fun"];
 
-    function shortText(text, maxLen = 220) {
-      if (!text) return "";
-      if (text.length <= maxLen) return text;
-      return text.slice(0, maxLen).trim() + "…";
-    }
+      const pageTitleMap = {
+        serious: "Σοβαρές ειδήσεις",
+        sports: "Αθλητικά",
+        movies: "Ταινίες",
+        music: "Μουσική",
+        theatre: "Θέατρο",
+        series: "Σειρές",
+        fun: "Διασκέδαση / Βόλτες",
+        other: "Άλλες ειδήσεις",
+        all: "Όλες οι ειδήσεις",
+      };
 
-    function renderArticles() {
-      const container = document.getElementById("news");
-      const statusEl = document.getElementById("status");
-      container.innerHTML = "";
+      document.getElementById("page-title").textContent =
+        pageTitleMap[category] || "Ειδήσεις";
 
-      let filtered = globalArticles.filter(a => !a.isSensitive);
-
-      if (activeCategory !== "all") {
-        filtered = filtered.filter(a => {
-          const cat = (a.category || "other").toLowerCase();
-          return cat === activeCategory;
-        });
-      }
-
-      if (!filtered.length) {
-        statusEl.textContent = "Δεν υπάρχουν ειδήσεις σε αυτή την κατηγορία.";
-        return;
-      } else {
-        statusEl.textContent = "";
-      }
-
-      filtered.forEach((a) => {
-        const col = document.createElement("div");
-        col.className = "col-12 col-md-6";
-
-        const card = document.createElement("article");
-        card.className = "article-card-grid h-100";
-        card.tabIndex = 0;
-        card.setAttribute("role", "button");
-
-        const titleEl = document.createElement("h2");
-        titleEl.className = "article-card-title";
-        const displayTitle = a.simpleTitle || a.title || "";
-        titleEl.textContent = displayTitle;
-        card.appendChild(titleEl);
-
-        const snippetEl = document.createElement("p");
-        snippetEl.className = "article-card-snippet";
-        const rawText = cleanMarkdown(a.simpleText || a.text || "");
-        snippetEl.textContent = shortText(rawText);
-        card.appendChild(snippetEl);
-
-        const metaEl = document.createElement("div");
-        metaEl.className = "article-card-meta";
-        const parts = [];
-
-        if (a.sourceName) {
-          parts.push("Πηγή: " + a.sourceName);
-        }
-        if (a.publishedAt) {
-          parts.push("Ημ/νία: " + a.publishedAt);
-        }
-
-        metaEl.textContent = parts.join(" · ");
-        card.appendChild(metaEl);
-
-        col.appendChild(card);
-        container.appendChild(col);
-
-        // id άρθρου: είτε από backend είτε θέση στον global πίνακα
-        const articleIndex = globalArticles.indexOf(a);
-        const articleId = a.id != null ? a.id : articleIndex;
-
-        const goToArticle = () => {
-          if (articleId == null || articleId < 0) return;
-          window.location.href =
-            "article.html?id=" + encodeURIComponent(articleId);
-        };
-
-        card.addEventListener("click", goToArticle);
-        card.addEventListener("keypress", (e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            goToArticle();
-          }
-        });
-      });
-    }
-
-    async function loadNews() {
-      const statusEl = document.getElementById("status");
-      try {
-        const res = await fetch("news.json?cachebust=" + Date.now());
+      async function loadJson(path) {
+        const res = await fetch(path);
         if (!res.ok) {
-          throw new Error("HTTP " + res.status);
+          throw new Error("Αποτυχία φόρτωσης " + path);
         }
+        return res.json();
+      }
 
-        const data = await res.json();
-        globalArticles = (data && data.articles) || [];
+      function renderNewsArticles(articles) {
+        const container = document.getElementById("content");
+        container.innerHTML = "";
 
-        if (!globalArticles.length) {
-          statusEl.textContent = "Προς το παρόν δεν υπάρχουν ειδήσεις.";
+        if (!articles || !articles.length) {
+          container.innerHTML = "<p>Δεν βρέθηκαν ειδήσεις για αυτή την κατηγορία.</p>";
           return;
         }
 
-        renderArticles();
-      } catch (err) {
-        console.error(err);
-        statusEl.textContent =
-          "Προέκυψε πρόβλημα κατά τη φόρτωση των ειδήσεων: " + err.message;
+        for (const article of articles) {
+          const card = document.createElement("article");
+          card.className = "article-card";
+
+          const titleEl = document.createElement("h2");
+          titleEl.textContent = article.simpleTitle || article.title || "Χωρίς τίτλο";
+
+          const metaEl = document.createElement("div");
+          metaEl.className = "meta";
+          const metaParts = [];
+          if (article.sourceName) metaParts.push(article.sourceName);
+          if (article.publishedAt) {
+            const d = new Date(article.publishedAt);
+            metaParts.push(d.toLocaleString("el-GR"));
+          }
+          metaEl.textContent = metaParts.join(" • ");
+
+          const contentEl = document.createElement("div");
+          contentEl.className = "content";
+          contentEl.textContent = article.simpleText || "";
+
+          if (article.sourceUrl) {
+            const linkEl = document.createElement("a");
+            linkEl.href = article.sourceUrl;
+            linkEl.target = "_blank";
+            linkEl.rel = "noopener noreferrer";
+            linkEl.textContent = "Δες την αρχική πηγή";
+            linkEl.style.display = "block";
+            linkEl.style.marginTop = "0.5rem";
+            contentEl.appendChild(document.createElement("br"));
+            contentEl.appendChild(linkEl);
+          }
+
+          card.appendChild(titleEl);
+          card.appendChild(metaEl);
+          card.appendChild(contentEl);
+
+          container.appendChild(card);
+        }
       }
-    }
 
-    document.addEventListener("DOMContentLoaded", () => {
-      activeCategory = getQueryCategory();
+      function renderLifestyleArticle(article) {
+        const container = document.getElementById("content");
+        container.innerHTML = "";
 
-      const info = CATEGORY_LABELS[activeCategory];
-      document.getElementById("category-title").textContent = info.title;
-      document.getElementById("category-description").textContent =
-        info.description;
+        if (!article) {
+          container.innerHTML =
+            "<p>Δεν βρέθηκε περιεχόμενο για αυτή την κατηγορία. Ίσως να μην βρέθηκαν σχετικά νέα σήμερα.</p>";
+          return;
+        }
 
-      loadNews();
-    });
-  </script>
-</body>
+        const card = document.createElement("article");
+        card.className = "article-card";
+
+        const titleEl = document.createElement("h2");
+        titleEl.textContent = article.title || "Περιεχόμενο";
+
+        const metaEl = document.createElement("div");
+        metaEl.className = "meta";
+        const metaParts = [];
+        if (article.date) metaParts.push("Ημερομηνία: " + article.date);
+        if (article.sources && article.sources.length) {
+          metaParts.push("Βασισμένο σε " + article.sources.length + " πηγές");
+        }
+        metaEl.textContent = metaParts.join(" • ");
+
+        const contentEl = document.createElement("div");
+        contentEl.className = "content";
+        contentEl.textContent = article.simpleText || "";
+
+        // Λίστα πηγών
+        if (article.sources && article.sources.length) {
+          const sourcesTitle = document.createElement("div");
+          sourcesTitle.style.marginTop = "0.8rem";
+          sourcesTitle.textContent = "Πηγές:";
+
+          const ul = document.createElement("ul");
+          for (const s of article.sources) {
+            const li = document.createElement("li");
+            if (s.url) {
+              const a = document.createElement("a");
+              a.href = s.url;
+              a.target = "_blank";
+              a.rel = "noopener noreferrer";
+              a.textContent = s.source || s.sourceName || s.url;
+              li.appendChild(a);
+            } else {
+              li.textContent = s.source || s.sourceName || "Πηγή";
+            }
+            ul.appendChild(li);
+          }
+
+          contentEl.appendChild(sourcesTitle);
+          contentEl.appendChild(ul);
+        }
+
+        card.appendChild(titleEl);
+        card.appendChild(metaEl);
+        card.appendChild(contentEl);
+
+        container.appendChild(card);
+      }
+
+      async function init() {
+        try {
+          if (category === "all") {
+            // Όλες οι ειδήσεις από news.json
+            const newsData = await loadJson("./news.json");
+            const all = Array.isArray(newsData.articles) ? newsData.articles : [];
+            renderNewsArticles(all);
+          } else if (!LIFESTYLE_CATEGORIES.includes(category)) {
+            // Σοβαρές / άλλες ειδήσεις από news.json
+            const newsData = await loadJson("./news.json");
+            const byCategory = newsData.articlesByCategory || {};
+            const articles = byCategory[category] || [];
+            renderNewsArticles(articles);
+          } else {
+            // Lifestyle κατηγορίες από lifestyle.json
+            const lifestyleData = await loadJson("./lifestyle.json");
+            const list = lifestyleData.articles || [];
+            const article = list.find((a) => a.category === category);
+            renderLifestyleArticle(article);
+          }
+        } catch (err) {
+          console.error(err);
+          document.getElementById("content").innerHTML =
+            "<p>Υπήρξε σφάλμα κατά τη φόρτωση των δεδομένων.</p>";
+        }
+      }
+
+      init();
+    </script>
+  </body>
 </html>
