@@ -24,29 +24,24 @@ export const CATEGORY_KEYS = [
 
 // RSS feeds που θα διαβάζουμε
 // Προς το παρόν μόνο ERT, αλλά εδώ θα προσθέτεις και άλλα.
-// Δεν τους δίνω category εδώ, γιατί η κατηγοριοποίηση γίνεται από το LLM.
+// Η κατηγοριοποίηση γίνεται από το LLM.
 const FEEDS = [
   {
     url: "https://www.ertnews.gr/feed",
     sourceName: "ERT News",
   },
-  // π.χ. αργότερα:
+  // αργότερα:
   // { url: "https://www.athinorama.gr/feed", sourceName: "Athinorama" },
   // { url: "https://www.culturenow.gr/feed", sourceName: "CultureNow" },
 ];
 
 // 🔹 Πηγές με πιο "ελαστικό" copyright (open data)
-// Εδώ ΔΕΝ τις καλώ ακόμη, απλά τις δηλώνω για να ξέρεις πού θα μπουν
-// - TMDB: ταινίες/σειρές (με attribution & περιορισμούς για εμπορική χρήση)
-// - MusicBrainz: μουσικά metadata (CC0, πολύ ελαστικό)
-// - SearchCulture / Europeana: πολιτιστικό περιεχόμενο με CC0/CC BY κτλ.
+// Δεν τις καλούμε ακόμη, απλά τις δηλώνουμε για μελλοντική χρήση.
 const OPEN_DATA_SOURCES = {
   moviesAndSeries: "TMDB",
   music: "MusicBrainz",
   cultureGR: "SearchCulture.gr",
   cultureEU: "Europeana",
-  // TODO: σε επόμενο βήμα μπορούμε να γράψουμε εδώ functions π.χ.
-  // fetchTmdbTrending(), fetchMusicBrainzNewReleases(), fetchSearchCultureItems() κ.λπ.
 };
 
 // Ρυθμίζουμε το parser να κρατά και extra πεδία για εικόνες/HTML
@@ -66,7 +61,7 @@ function stripHtml(html) {
   return html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
 
-// Σταθερό id άρθρου με βάση guid/link κτλ.
+// Σταθερό id άρθρου με βάση guid/link κτλ. (για raw άρθρα ανά feed)
 function makeArticleId(feedUrl, item) {
   const base =
     item.guid ||
@@ -159,9 +154,7 @@ function normalizeCategory(rawCategory) {
   }
 
   // Αθλητισμός
-  if (
-    ["sports", "sport", "αθλητισμος", "αθλητισμός"].includes(c)
-  ) {
+  if (["sports", "sport", "αθλητισμος", "αθλητισμός"].includes(c)) {
     return "sports";
   }
 
@@ -175,23 +168,17 @@ function normalizeCategory(rawCategory) {
   }
 
   // Μουσική
-  if (
-    ["music", "μουσικη", "μουσική"].includes(c)
-  ) {
+  if (["music", "μουσικη", "μουσική"].includes(c)) {
     return "music";
   }
 
   // Θέατρο
-  if (
-    ["theatre", "theater", "θεατρο", "θέατρο"].includes(c)
-  ) {
+  if (["theatre", "theater", "θεατρο", "θέατρο"].includes(c)) {
     return "theatre";
   }
 
   // Σειρές
-  if (
-    ["series", "tv", "σειρες", "σειρές"].includes(c)
-  ) {
+  if (["series", "tv", "σειρες", "σειρές"].includes(c)) {
     return "series";
   }
 
@@ -216,11 +203,47 @@ function normalizeCategory(rawCategory) {
   return "other";
 }
 
+// 🧠 Ομαλοποίηση τίτλου για ομαδοποίηση σε "θέματα"
+function normalizeTitleForGrouping(title) {
+  if (!title) return "";
+  return title
+    .toLowerCase()
+    // πετάμε εισαγωγικά, σημεία στίξης κλπ.
+    .replace(/[«»"“”'’.,!?;:()[\]]+/g, " ")
+    // πετάμε κοινές ετικέτες τύπου "live"
+    .replace(/\blive\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 // Κλήση στο AI για απλοποίηση + κατηγοριοποίηση + παραφρασμένο τίτλο
-async function simplifyAndClassifyText(title, text) {
-  const input =
-    `Τίτλος άρθρου:\n${title}\n\n` +
-    `Κείμενο άρθρου (προς απλοποίηση):\n${text}\n`;
+// 🆕 ΠΛΕΟΝ παίρνει ΟΛΟ το "θέμα" (1 ή περισσότερα άρθρα).
+async function simplifyAndClassifyText(topicGroup) {
+  const { articles } = topicGroup;
+  if (!articles || articles.length === 0) {
+    return null;
+  }
+
+  const parts = [];
+
+  parts.push(
+    "Παρακάτω θα δεις πληροφορίες για ΜΙΑ είδηση, από ΕΝΑ ή ΠΕΡΙΣΣΟΤΕΡΑ άρθρα.\n" +
+      "Όλα τα άρθρα μιλούν για το ίδιο γεγονός. " +
+      "Χρησιμοποίησε όλες αυτές τις πληροφορίες σαν υλικό για να γράψεις ΕΝΑ νέο κείμενο σε πολύ απλά ελληνικά."
+  );
+
+  articles.forEach((article, index) => {
+    const src = article.sourceName || "Άγνωστη πηγή";
+    const truncatedText = article.rawText.slice(0, 4000); // όριο ανά άρθρο
+    parts.push(
+      `\n\nΆρθρο ${index + 1}:\n` +
+        `Πηγή: ${src}\n` +
+        `Τίτλος: ${article.title}\n` +
+        `Κείμενο:\n${truncatedText}\n`
+    );
+  });
+
+  const input = parts.join("\n");
 
   const response = await client.responses.create({
     model: "gpt-4o-mini",
@@ -233,10 +256,7 @@ async function simplifyAndClassifyText(title, text) {
     const parsed = JSON.parse(textOut);
     return {
       simplifiedText: parsed.simplifiedText || "",
-      simplifiedTitle:
-        parsed.simplifiedTitle ||
-        parsed.simpleTitle ||
-        "",
+      simplifiedTitle: parsed.simplifiedTitle || parsed.simpleTitle || "",
       rawCategory: parsed.category || "other",
       isSensitive: Boolean(parsed.isSensitive),
     };
@@ -311,9 +331,68 @@ function buildArticlesByCategory(allArticles) {
   return result;
 }
 
-async function run() {
-  const allArticles = [];
+// 🧱 Ομαδοποίηση raw άρθρων σε "θέματα" με βάση τον τίτλο
+function groupArticlesByTopic(rawArticles) {
+  const groupsByKey = new Map();
 
+  for (const article of rawArticles) {
+    const normTitle = normalizeTitleForGrouping(article.title);
+    const key = normTitle || article.id; // fallback: μοναδικό id αν δεν υπάρχει τίτλος
+
+    let group = groupsByKey.get(key);
+    if (!group) {
+      group = {
+        key,
+        articles: [],
+      };
+      groupsByKey.set(key, group);
+    }
+    group.articles.push(article);
+  }
+
+  const topicGroups = [];
+
+  for (const group of groupsByKey.values()) {
+    const primary = group.articles[0];
+
+    // publishedAt = πιο πρόσφατο από την ομάδα
+    let latestPublishedAt = primary.publishedAt;
+    for (const a of group.articles) {
+      if (new Date(a.publishedAt) > new Date(latestPublishedAt)) {
+        latestPublishedAt = a.publishedAt;
+      }
+    }
+
+    const imageUrl =
+      group.articles.find((a) => a.imageUrl)?.imageUrl || null;
+    const videoUrl =
+      group.articles.find((a) => a.videoUrl)?.videoUrl || null;
+
+    // id θέματος: hash από όλα τα raw ids της ομάδας
+    const groupId = crypto
+      .createHash("sha1")
+      .update(group.articles.map((a) => a.id).sort().join("-"))
+      .digest("hex")
+      .slice(0, 12);
+
+    topicGroups.push({
+      id: groupId,
+      key: group.key,
+      title: primary.title,
+      articles: group.articles,
+      imageUrl,
+      videoUrl,
+      publishedAt: latestPublishedAt,
+    });
+  }
+
+  return topicGroups;
+}
+
+async function run() {
+  const rawArticles = [];
+
+  // 1️⃣ Μαζεύουμε ΟΛΑ τα raw άρθρα από ΟΛΑ τα feeds
   for (const feed of FEEDS) {
     console.log("Διαβάζω feed:", feed.url);
     let rss;
@@ -324,7 +403,7 @@ async function run() {
       continue;
     }
 
-    const items = (rss.items || []).slice(0, 30); // παίρνουμε αρκετές για να έχουμε 6/κατηγορία συνολικά
+    const items = (rss.items || []).slice(0, 30); // παίρνουμε αρκετές για να έχουμε υλικό
 
     for (const item of items) {
       const title = item.title || "";
@@ -340,45 +419,76 @@ async function run() {
       const rawText = stripHtml(htmlContent);
       if (!rawText) continue;
 
-      // Μικρό όριο για το input προς το μοντέλο
-      const textForModel = rawText.slice(0, 6000);
-
-      console.log("Απλοποιώ & ταξινομώ:", title);
-      const result = await simplifyAndClassifyText(title, textForModel);
-
-      if (!result || !result.simplifiedText) continue;
-
-      // Φιλτράρουμε ευαίσθητες ειδήσεις
-      if (result.isSensitive) {
-        console.log("Παραλείπω ευαίσθητη είδηση:", title);
-        continue;
-      }
-
-      const imageUrl = extractImageUrl(item, htmlContent);
-      const videoUrl = extractVideoUrl(item, htmlContent);
-      const id = makeArticleId(feed.url, item);
-
-      const publishedAt =
+      const publishedAtDate =
         (item.isoDate && new Date(item.isoDate)) ||
         (item.pubDate && new Date(item.pubDate)) ||
         new Date();
 
-      const categoryKey = normalizeCategory(result.rawCategory);
+      const publishedAt = publishedAtDate.toISOString();
+      const imageUrl = extractImageUrl(item, htmlContent);
+      const videoUrl = extractVideoUrl(item, htmlContent);
+      const id = makeArticleId(feed.url, item);
 
-      allArticles.push({
+      rawArticles.push({
         id,
-        title, // αρχικός τίτλος
-        simpleTitle: result.simplifiedTitle || title,
-        simpleText: result.simplifiedText,
-        sourceUrl: link,
         sourceName: feed.sourceName,
-        category: categoryKey, // ✅ μία από τις CATEGORY_KEYS
-        isSensitive: false,
+        sourceUrl: link,
+        title,
+        rawText,
+        htmlContent,
         imageUrl: imageUrl || null,
         videoUrl: videoUrl || null,
-        publishedAt: publishedAt.toISOString(),
+        publishedAt,
       });
     }
+  }
+
+  if (rawArticles.length === 0) {
+    console.warn("Δεν βρέθηκαν raw άρθρα από τα feeds.");
+  }
+
+  // 2️⃣ Ομαδοποιούμε σε "θέματα" (1 θέμα = 1 ή περισσότερα άρθρα για την ίδια είδηση)
+  const topicGroups = groupArticlesByTopic(rawArticles);
+  console.log("Βρέθηκαν", topicGroups.length, "θεματικές ομάδες άρθρων.");
+
+  const allArticles = [];
+
+  // 3️⃣ Για κάθε θέμα, φτιάχνουμε ΕΝΑ νέο κείμενο με το LLM
+  for (const topic of topicGroups) {
+    console.log("Απλοποιώ & συνθέτω για θέμα:", topic.title);
+
+    const result = await simplifyAndClassifyText(topic);
+    if (!result || !result.simplifiedText) continue;
+
+    // Φιλτράρουμε ευαίσθητες ειδήσεις
+    if (result.isSensitive) {
+      console.log("Παραλείπω ευαίσθητη είδηση:", topic.title);
+      continue;
+    }
+
+    const categoryKey = normalizeCategory(result.rawCategory);
+
+    const primary = topic.articles[0];
+    const sources = topic.articles.map((a) => ({
+      sourceName: a.sourceName,
+      sourceUrl: a.sourceUrl,
+    }));
+
+    allArticles.push({
+      id: topic.id,
+      title: topic.title, // αρχικός τίτλος (από το πρώτο άρθρο του θέματος)
+      simpleTitle: result.simplifiedTitle || topic.title,
+      simpleText: result.simplifiedText,
+      sourceName: primary.sourceName,
+      sourceUrl: primary.sourceUrl,
+      // 🆕 ΠΛΗΡΗΣ λίστα με 2–3+ πηγές
+      sources,
+      category: categoryKey, // ✅ μία από τις CATEGORY_KEYS
+      isSensitive: false,
+      imageUrl: topic.imageUrl,
+      videoUrl: topic.videoUrl,
+      publishedAt: topic.publishedAt,
+    });
   }
 
   // TODO: σε επόμενο βήμα:
