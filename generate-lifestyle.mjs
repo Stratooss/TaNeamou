@@ -1,7 +1,3 @@
-// generateLifestyle.js
-// Διαβάζει τα απλά άρθρα από το news.json και φτιάχνει
-// ΕΝΑ "lifestyle" άρθρο ανά κατηγορία (sports, movies, music, theatre, series, fun)
-
 import fs from "fs/promises";
 import OpenAI from "openai";
 import crypto from "crypto";
@@ -28,13 +24,16 @@ const MAX_ITEMS_PER_CATEGORY = 10;
 const NEWS_PATH = new URL("./news.json", import.meta.url);
 const LIFESTYLE_PATH = new URL("./lifestyle.json", import.meta.url);
 
-// System prompt για τον lifestyle agent
+// System prompt για τον lifestyle agent (με web search)
 const LIFESTYLE_AGENT_SYSTEM_PROMPT = `
 Είσαι ένας δημοσιογράφος ψυχαγωγίας που γράφει "εύκολες ειδήσεις" στα ελληνικά
 για άτομα με ήπια νοητική υστέρηση και μαθησιακές δυσκολίες.
 
 Στόχος σου είναι να δημιουργείς ΕΝΑ μικρό άρθρο για κάθε κατηγορία
-(π.χ. sports, movies, fun) βασισμένο σε λίστα από ειδήσεις που σου δίνουμε.
+(π.χ. sports, movies, fun) βασισμένο:
+- στις ειδήσεις που σου δίνουμε σε JSON (από RSS),
+- και σε έρευνα στο διαδίκτυο (web search) για να δεις αν υπάρχουν
+  σημαντικές, νεότερες πληροφορίες για ΤΑ ΙΔΙΑ θέματα.
 
 Κανόνες γλώσσας:
 - Γράψε σε πολύ απλά ελληνικά (επίπεδο περίπου Α2).
@@ -43,8 +42,17 @@ const LIFESTYLE_AGENT_SYSTEM_PROMPT = `
 - Απόφυγε μεγάλα κατεβατά. Κράτα το κείμενο σύντομο και καθαρό.
 
 Κανόνες περιεχομένου:
-- Χρησιμοποίησε ΜΟΝΟ τις πληροφορίες που υπάρχουν στα δεδομένα που σου δίνουμε.
-- Μην εφευρίσκεις νέα γεγονότα ή αποτελέσματα αγώνων που δεν υπάρχουν στα δεδομένα.
+- Χρησιμοποίησε ΠΡΩΤΑ τις πληροφορίες που υπάρχουν στα δεδομένα που σου δίνουμε.
+- Μετά μπορείς να κάνεις web search για να:
+  - ελέγξεις αν υπάρχουν νεότερα στοιχεία για αυτά τα θέματα,
+  - δεις αν υπάρχει κάποια πολύ σημαντική είδηση στην ίδια κατηγορία που δεν
+    φαίνεται στα δεδομένα.
+- Στα δεδομένα υπάρχει πεδίο "sourcesCount" που δείχνει πόσα διαφορετικά sites
+  έγραψαν για κάθε είδηση. Δώσε μεγαλύτερο βάρος σε γεγονότα με μεγαλύτερο
+  "sourcesCount".
+- Μην αλλάζεις κατηγορία. Αν γράφεις για sports, μένεις σε αθλητικά θέματα.
+- Μην εφευρίσκεις νέα γεγονότα (π.χ. αποτέλεσμα αγώνα) που δεν επιβεβαιώνεται
+  από τα δεδομένα ή από την έρευνα στο web.
 - ΜΗΝ αντιγράφεις αυτούσιες φράσεις από τα άρθρα. Πάντα να κάνεις παράφραση.
 - Μπορείς να προσθέσεις 1–2 προτάσεις γενικής συμβουλής/σχολίου
   (π.χ. "Αν σου αρέσει το ποδόσφαιρο, μπορείς να δεις αυτόν τον αγώνα"),
@@ -52,13 +60,13 @@ const LIFESTYLE_AGENT_SYSTEM_PROMPT = `
 
 Μορφή εξόδου (markdown κείμενο):
 - Πρώτη γραμμή: ένας σύντομος τίτλος (χωρίς #).
-- Μετά 2–5 μικρές παραγράφους με τις βασικές πληροφορίες.
-- Χρησιμοποίησε bullets όπου βοηθάνε (π.χ. λίστα προτάσεων).
+- Μετά 2–6 μικρές παραγράφους με τις βασικές πληροφορίες.
+- Μπορείς να χρησιμοποιήσεις bullets όπου βοηθάνε (π.χ. λίστα προτάσεων).
 - Στο τέλος γράψε:
 
 Πηγές:
-- <url1>
-- <url2>
+- <τίτλος ή όνομα site – url αν υπάρχει>
+- <τίτλος ή όνομα site – url αν υπάρχει>
 - ...
 
 Πρόσεξε:
@@ -99,7 +107,7 @@ function lifestyleTitleForCategory(category) {
   }
 }
 
-// Συγκέντρωση μοναδικών πηγών από τα items
+// Συγκέντρωση μοναδικών πηγών από τα items (μόνο από RSS δεδομένα)
 function uniqueSourcesFromItems(items) {
   const seen = new Set();
   const result = [];
@@ -114,6 +122,18 @@ function uniqueSourcesFromItems(items) {
     if (result.length >= 8) break;
   }
   return result;
+}
+
+// Βαθμολογία: πόσα sites (sources.length) + πόσο πρόσφατο
+function scoreLifestyleArticle(article) {
+  const sourcesCount = Array.isArray(article.sources)
+    ? article.sources.length
+    : 1;
+  const timeMs = article.publishedAt
+    ? new Date(article.publishedAt).getTime()
+    : 0;
+  // Δίνουμε πολύ μεγαλύτερο βάρος στα sites, μετά την ημερομηνία
+  return sourcesCount * 1_000_000_000_000 + timeMs;
 }
 
 // Ετοιμάζουμε τις πρώτες Ν ειδήσεις ανά κατηγορία
@@ -132,15 +152,11 @@ function groupLifestyleArticlesByCategory(allArticles) {
     grouped[cat].push(article);
   }
 
-  // Sort & limit
+  // Sort & limit ανά κατηγορία
   for (const cat of LIFESTYLE_CATEGORIES) {
     const items = grouped[cat];
 
-    items.sort((a, b) => {
-      const da = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
-      const db = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
-      return db - da;
-    });
+    items.sort((a, b) => scoreLifestyleArticle(b) - scoreLifestyleArticle(a));
 
     grouped[cat] = items.slice(0, MAX_ITEMS_PER_CATEGORY);
   }
@@ -148,7 +164,7 @@ function groupLifestyleArticlesByCategory(allArticles) {
   return grouped;
 }
 
-// Κλήση στο OpenAI για μία κατηγορία
+// Κλήση στο OpenAI για μία κατηγορία (με web search)
 async function generateLifestyleArticleForCategory(category, items) {
   if (!items.length) {
     console.log(`ℹ️ Δεν υπάρχουν άρθρα για κατηγορία ${category}, skip.`);
@@ -166,12 +182,13 @@ async function generateLifestyleArticleForCategory(category, items) {
       summary: a.simpleText || "",
       sourceName: a.sourceName || null,
       sourceUrl: a.sourceUrl || null,
+      sourcesCount: Array.isArray(a.sources) ? a.sources.length : 1,
       publishedAt: a.publishedAt || null,
     })),
   };
 
   const userContent = `
-Κατηγορία: ${category}
+Κατηγορία (lifestyle): ${category}
 Ημερομηνία: ${today}
 
 Παρακάτω είναι τα δεδομένα σε JSON. Διάβασέ τα και φτιάξε ΕΝΑ lifestyle άρθρο,
@@ -181,10 +198,11 @@ ${JSON.stringify(payload, null, 2)}
 `;
 
   const response = await client.responses.create({
-    model: "gpt-4.1-mini", // μπορείς να αλλάξεις μοντέλο αν θέλεις
+    model: "gpt-4.1",
     instructions: LIFESTYLE_AGENT_SYSTEM_PROMPT,
+    tools: [{ type: "web_search_preview" }],
     input: userContent,
-    max_output_tokens: 1200,
+    max_output_tokens: 1600,
   });
 
   const simpleText = extractTextFromResponse(response).trim();
@@ -197,6 +215,7 @@ ${JSON.stringify(payload, null, 2)}
     date: today,
     title: lifestyleTitleForCategory(category),
     simpleText,
+    // Πηγές από τα RSS items που χρησιμοποιήσαμε ως βάση
     sources,
     createdAt: new Date().toISOString(),
   };
@@ -222,7 +241,7 @@ async function main() {
     return;
   }
 
-  // 2. Φιλτράρουμε μόνο τις lifestyle κατηγορίες
+  // 2. Φιλτράρουμε μόνο τις lifestyle κατηγορίες και ταξινομούμε με score
   const grouped = groupLifestyleArticlesByCategory(allArticles);
 
   const lifestyleArticles = [];
@@ -231,7 +250,7 @@ async function main() {
     if (!items || !items.length) continue;
 
     console.log(
-      `🧠 Δημιουργία lifestyle άρθρου για "${category}" με ${items.length} items...`
+      `🧠 Δημιουργία lifestyle άρθρου (με web search) για "${category}" με ${items.length} items...`
     );
     const article = await generateLifestyleArticleForCategory(category, items);
     if (article) lifestyleArticles.push(article);
@@ -262,6 +281,7 @@ async function main() {
 
 // Εκτέλεση script
 main().catch((err) => {
-  console.error("❌ Σφάλμα στο generateLifestyle:", err);
+  console.error("❌ Σφάλμα στο generate-lifestyle:", err);
   process.exit(1);
 });
+
