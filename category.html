@@ -94,8 +94,24 @@
 
       const LIFESTYLE_CATEGORIES = ["sports", "movies", "music", "theatre", "series", "fun"];
 
-      // σειρά θεματικών για τις σοβαρές ειδήσεις
-      const SERIOUS_TOPIC_ORDER = ["politics_economy", "social", "world"];
+      // metadata για τις 3 σοβαρές θεματικές
+      const SERIOUS_TOPIC_META = {
+        politics_economy: {
+          label: "Πολιτική & Οικονομία",
+          description: "Τι γίνεται στην κυβέρνηση, στη βουλή και στην οικονομία.",
+          image: "images/serious/politics.jpg", // εδώ θα βάλεις το δικό σου thumbnail
+        },
+        social: {
+          label: "Κοινωνία",
+          description: "Θέματα που αφορούν την καθημερινή ζωή και τους ανθρώπους.",
+          image: "images/serious/social.jpg",
+        },
+        world: {
+          label: "Κόσμος",
+          description: "Σημαντικά γεγονότα από άλλες χώρες.",
+          image: "images/serious/world.jpg",
+        },
+      };
 
       const pageTitleMap = {
         serious: "Σοβαρές ειδήσεις",
@@ -232,73 +248,102 @@
         container.appendChild(card);
       }
 
-      // label για τις θεματικές των σοβαρών
-      function topicLabelForFrontend(topic, fallbackLabel) {
-        switch (topic) {
-          case "politics_economy":
-            return "Πολιτική & Οικονομία";
-          case "social":
-            return "Κοινωνία";
-          case "world":
-            return "Κόσμος";
-          default:
-            return fallbackLabel || "Σοβαρή είδηση";
-        }
-      }
-
-      // 🔹 Σοβαρές ειδήσεις από serious-digest.json
-      async function renderSeriousDigest() {
+      // 🔹 Σελίδα "υπο-κατηγοριών" για Σοβαρές Ειδήσεις
+      async function renderSeriousCategories() {
         const container = document.getElementById("content");
         container.innerHTML = "";
 
         try {
           const data = await loadJson("./serious-digest.json");
-          const rawArticles = Array.isArray(data.articles) ? data.articles : [];
+          const digestArticles = Array.isArray(data.articles) ? data.articles : [];
 
-          if (!rawArticles.length) {
+          if (!digestArticles.length) {
             container.innerHTML =
               "<p>Δεν υπάρχουν διαθέσιμα άρθρα σοβαρής επικαιρότητας αυτή τη στιγμή.</p>";
             return;
           }
 
-          const ordered = [...rawArticles].sort((a, b) => {
-            const ia = SERIOUS_TOPIC_ORDER.indexOf(a.topic);
-            const ib = SERIOUS_TOPIC_ORDER.indexOf(b.topic);
-            const sa = ia === -1 ? Number.MAX_SAFE_INTEGER : ia;
-            const sb = ib === -1 ? Number.MAX_SAFE_INTEGER : ib;
-            return sa - sb;
-          });
+          // map topic -> άρθρο
+          const byTopic = {};
+          for (const a of digestArticles) {
+            if (a.topic) {
+              byTopic[a.topic] = a;
+            }
+          }
 
-          for (const article of ordered) {
+          const topicsInOrder = ["politics_economy", "social", "world"];
+
+          for (const topic of topicsInOrder) {
+            const digest = byTopic[topic];
+            if (!digest) continue;
+
+            const meta = SERIOUS_TOPIC_META[topic] || {
+              label: digest.topicLabel || "Σοβαρή είδηση",
+              description: "",
+              image: "",
+            };
+
             const card = document.createElement("article");
-            card.className = "article-card";
+            card.className =
+              "article-card d-flex flex-column flex-md-row align-items-md-center";
+
+            if (meta.image) {
+              const imgWrapper = document.createElement("div");
+              imgWrapper.style.flex = "0 0 140px";
+              imgWrapper.style.marginRight = "1rem";
+              imgWrapper.style.marginBottom = "0.75rem";
+
+              const img = document.createElement("img");
+              img.src = meta.image;
+              img.alt = meta.label;
+              img.style.width = "100%";
+              img.style.borderRadius = "12px";
+              img.style.objectFit = "cover";
+
+              imgWrapper.appendChild(img);
+              card.appendChild(imgWrapper);
+            }
+
+            const bodyDiv = document.createElement("div");
+            bodyDiv.style.flex = "1 1 auto";
 
             const titleEl = document.createElement("h2");
-            titleEl.textContent = article.title || "Σοβαρή είδηση";
+            titleEl.textContent = meta.label;
+            bodyDiv.appendChild(titleEl);
 
-            const metaEl = document.createElement("div");
-            metaEl.className = "meta";
-            const metaParts = [];
-            if (article.topic) {
-              metaParts.push(
-                topicLabelForFrontend(article.topic, article.topicLabel)
-              );
+            if (meta.description) {
+              const descEl = document.createElement("p");
+              descEl.className = "mb-1";
+              descEl.textContent = meta.description;
+              bodyDiv.appendChild(descEl);
             }
-            if (article.createdAt) {
-              const d = new Date(article.createdAt);
-              metaParts.push(d.toLocaleString("el-GR"));
+
+            if (digest.simpleText) {
+              const snippetEl = document.createElement("p");
+              snippetEl.className = "text-muted mb-2";
+              const firstLine = digest.simpleText.split("\n")[0] || "";
+              const snippet =
+                firstLine.length > 160
+                  ? firstLine.slice(0, 157) + "..."
+                  : firstLine;
+              snippetEl.textContent = snippet;
+              bodyDiv.appendChild(snippetEl);
             }
-            metaEl.textContent = metaParts.join(" • ");
 
-            const contentEl = document.createElement("div");
-            contentEl.className = "content";
-            contentEl.textContent = article.simpleText || "";
+            const buttonEl = document.createElement("a");
+            buttonEl.href =
+              "article.html?source=serious&topic=" + encodeURIComponent(topic);
+            buttonEl.className = "btn btn-primary btn-sm";
+            buttonEl.textContent = "Δες την είδηση";
+            bodyDiv.appendChild(buttonEl);
 
-            card.appendChild(titleEl);
-            card.appendChild(metaEl);
-            card.appendChild(contentEl);
-
+            card.appendChild(bodyDiv);
             container.appendChild(card);
+          }
+
+          if (!container.hasChildNodes()) {
+            container.innerHTML =
+              "<p>Δεν βρέθηκαν άρθρα σοβαρής επικαιρότητας αυτή τη στιγμή.</p>";
           }
         } catch (err) {
           console.error("Σφάλμα φόρτωσης serious-digest.json:", err);
@@ -315,10 +360,10 @@
             const all = Array.isArray(newsData.articles) ? newsData.articles : [];
             renderNewsArticles(all);
           } else if (category === "serious") {
-            // 🔹 Σοβαρές ειδήσεις: διαβάζουμε το serious-digest.json
-            await renderSeriousDigest();
+            // 🔹 Σοβαρές ειδήσεις: δείχνουμε 3 κάρτες θεματικών
+            await renderSeriousCategories();
           } else if (!LIFESTYLE_CATEGORIES.includes(category)) {
-            // Σοβαρές / άλλες ειδήσεις από news.json (όχι lifestyle)
+            // Μη-lifestyle κατηγορίες από news.json
             const newsData = await loadJson("./news.json");
             const byCategory = newsData.articlesByCategory || {};
             const articles = byCategory[category] || [];
@@ -341,3 +386,4 @@
     </script>
   </body>
 </html>
+
