@@ -3,7 +3,8 @@ name: Fetch and simplify news
 on:
   workflow_dispatch:   # να μπορείς να το τρέχεις με το χέρι
   schedule:
-    - cron: "0 * * * *"   # μία φορά την ώρα
+    - cron: "0 7 * * *"   # 09:00 ώρα Ελλάδας (χειμώνα)
+    - cron: "0 15 * * *"  # 17:00 ώρα Ελλάδας (χειμώνα)
 
 jobs:
   build:
