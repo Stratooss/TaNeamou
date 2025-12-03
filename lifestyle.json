@@ -1,109 +1,82 @@
 {
-  "generatedAt": "2025-12-03T17:53:11.323Z",
+  "generatedAt": "2025-12-03T20:36:43.349Z",
   "articles": [
     {
-      "id": "f2361cc5-9191-4ee3-8c4c-21200e974dc6",
+      "id": "32eafb4a-ad8f-4745-aa93-ebc3a352cf50",
       "contentType": "agent_lifestyle",
       "category": "sports",
       "date": "2025-12-03",
       "title": "Τα αθλητικά της ημέρας με απλά λόγια",
-      "simpleText": "Ποδόσφαιρο: Νέοι αγώνες και σημαντικές νίκες στο Κύπελλο Ελλάδας\n\nΣήμερα παίζουν δύο μεγάλες ομάδες για το Κύπελλο Ελλάδας. Ο Παναθηναϊκός έχει νέο σχήμα και παίζει με την Κηφισιά στη Λεωφόρο. Ο προπονητής έκανε πολλές αλλαγές στην ομάδα. Ο αγώνας θα γίνει σήμερα και μπορείς να τον δεις ζωντανά.\n\nΗ ΑΕΚ κέρδισε τον ΟΦΗ με 2-0 στο γήπεδό της. Ήταν η τέταρτη νίκη της στο τουρνουά. Ο Περέιρα και ο Ζοάο Μάριο σκόραραν τα γκολ. Η ΑΕΚ προσπαθεί να περάσει στα προημιτελικά, αλλά εξαρτάται και από άλλα παιχνίδια.\n\nΕπίσης, ο Ατρόμητος νίκησε την ΑΕΛ και πέρασε στην επόμενη φάση. Ο Λεβαδειακός κέρδισε τη Μαρκό με 3-1 και δεν έχει χάσει κανένα παιχνίδι ακόμη. Ο Asteras Aktor έκανε μεγάλη νίκη 5-0 κόντρα στην Ηλιούπολη.\n\nΑν σου αρέσει το ποδόσφαιρο, μπορείς να δεις αυτούς τους αγώνες. Είναι πολύ ενδιαφέρον να παρακολουθείς καινούργιες ομάδες και σημαντικές νίκες.\n\nΠηγές:\n- https://www.newsbomb.gr/sports/podosfairo/story/1698565/panathinaikos-kifisia-live-o-agonas-tis-leoforou-gia-to-kypello-elladas\n- https://www.ertnews.gr/athlitismos/kypello-elladas-i-aek-nikise-2-0-ton-ofi-kai-perimenei-gia-na-dei-an-tha-meinei-stin-proti-tetrada/\n- https://www.tanea.gr/2025/12/03/sports/poreia-prokrisis-gia-atromito-kai-levadeiako-me-nikes-apokleismo-gia-tin-ael/\n- https://www.newsbomb.gr/sports/podosfairo/story/1698595/kypello-elladas-peripato-o-asteras-aktor-apenanti-stin-ilioypoli",
+      "simpleText": "Ο Ολυμπιακός ΟΝΕΧ στον τελικό μετά από νίκη στον Παναθηναϊκό\n\nΟ Ολυμπιακός ΟΝΕΧ νίκησε τον Παναθηναϊκό με σκορ 3-1. Έτσι προκρίθηκε στον τελικό του League Cup στο βόλεϊ. Ο Παναθηναϊκός πήρε το πρώτο σετ, αλλά ο Ολυμπιακός γύρισε το παιχνίδι και κέρδισε τα επόμενα τρία σετ. Τώρα, ο Ολυμπιακός περιμένει να μάθει με ποια ομάδα θα παίξει στον τελικό. Ο αντίπαλος θα βγει από το παιχνίδι ΠΑΟΚ – Φλοίσβος.\n\nΑν σας αρέσει το βόλεϊ, αυτός ο τελικός θα είναι πολύ ενδιαφέρων. Μπορείτε να τον παρακολουθήσετε όταν γίνει για να δείτε αν ο Ολυμπιακός θα πάρει το κύπελλο.\n\nΠηγές:\n- TA NEA – https://www.tanea.gr/2025/12/03/sports/othersports/olympiakos-onex-panathinaikos-3-1-thryliki-niki-kai-prokrisi-ston-teliko-tou-league-cup/\n- TO BHMA – https://www.tanea.gr/2025/12/03/sports/othersports/olympiakos-onex-panathinaikos-3-1-thryliki-niki-kai-prokrisi-ston-teliko-tou-league-cup/",
       "sources": [
         {
-          "url": "https://www.newsbomb.gr/sports/podosfairo/story/1698565/panathinaikos-kifisia-live-o-agonas-tis-leoforou-gia-to-kypello-elladas",
+          "url": "https://www.tanea.gr/2025/12/03/sports/othersports/olympiakos-onex-panathinaikos-3-1-thryliki-niki-kai-prokrisi-ston-teliko-tou-league-cup/",
+          "sourceName": "TA NEA, TO BHMA"
+        },
+        {
+          "url": "https://www.newsbomb.gr/sports/podosfairo/story/1698568/aris-paok-live-to-dermpi-gia-to-kypello-elladas",
           "sourceName": "Newsbomb.gr"
         },
         {
-          "url": "https://www.ertnews.gr/athlitismos/kypello-elladas-i-aek-nikise-2-0-ton-ofi-kai-perimenei-gia-na-dei-an-tha-meinei-stin-proti-tetrada/",
+          "url": "https://www.ertnews.gr/athlitismos/mystirio-me-tin-kinisi-tou-gianni-antetokounmpo-na-diagrapsei-tis-fotografies-me-tous-mpaks-sta-social-media-fountonoun-oi-fimes-oti-thelei-na-paei-stous-niks/",
           "sourceName": "ERT News"
         },
         {
-          "url": "https://www.newsbomb.gr/sports/podosfairo/story/1698598/aek-ofi-2-0-o-pereira-ypegrapse-to-apolyto-anamoni-gia-tin-prokrisi-sta-proimitelika",
+          "url": "https://www.newsbomb.gr/sports/podosfairo/story/1698631/aek-ofi-ta-highlights-tis-anametrisis-gia-to-kypello-elladas-vinteo",
           "sourceName": "Newsbomb.gr"
         },
         {
-          "url": "https://www.tanea.gr/2025/12/03/sports/poreia-prokrisis-gia-atromito-kai-levadeiako-me-nikes-apokleismo-gia-tin-ael/",
+          "url": "https://www.tanea.gr/2025/12/03/sports/football/agiaks-se-anazitisi-proponiti-vrisketai-akoma-o-antipalos-tou-olympiakou/",
           "sourceName": "TA NEA"
         },
         {
-          "url": "https://www.newsbomb.gr/sports/podosfairo/story/1698556/live-aek-ofi-i-anametrisi-tis-opap-arena-gia-to-kypello-elladas",
-          "sourceName": "Newsbomb.gr"
-        },
-        {
-          "url": "https://www.newsbomb.gr/sports/podosfairo/story/1698595/kypello-elladas-peripato-o-asteras-aktor-apenanti-stin-ilioypoli",
-          "sourceName": "Newsbomb.gr"
-        },
-        {
-          "url": "https://www.tanea.gr/2025/12/03/sports/football/panathinaikos-oute-tora-o-tamporda-stin-endekada/",
-          "sourceName": "TA NEA"
-        },
-        {
-          "url": "https://www.ertnews.gr/athlitismos/mpartzokas-eksairetika-amfivolos-o-fournie-me-ti-fenermpaxtse-me-exei-kourasei-i-metagrafologia/",
+          "url": "https://www.ertnews.gr/athlitismos/kypello-elladas-ftoxi-niki-me-1-0-tou-panathinaikou-epi-tis-kifisias-kai-i-tetrada-tha-krithei-stin-kavala/",
           "sourceName": "ERT News"
-        }
-      ],
-      "createdAt": "2025-12-03T17:52:51.574Z"
-    },
-    {
-      "id": "e0fbe0b3-e01f-4325-9993-415ba44d4d11",
-      "contentType": "agent_lifestyle",
-      "category": "music",
-      "date": "2025-12-03",
-      "title": "Μουσική και συναυλίες σε απλά λόγια",
-      "simpleText": "Μουσικές ειδήσεις που δεν πρέπει να χάσεις\n\nΟι ONIRAMA θα κάνουν τρεις συναυλίες στο Θέατρο Άλσος. Οι ημερομηνίες είναι 23, 24 και 25 Δεκεμβρίου. Θα παίξουν αγαπημένα τραγούδια και οι φίλοι τους θα περάσουν πολύ όμορφα.\n\nΕπίσης, το Spotify ανακοίνωσε το “Wrapped 2025”. Αυτό δείχνει ποια τραγούδια και καλλιτέχνες ακούσατε περισσότερο μέσα στη χρονιά. Υπάρχουν νέα πράγματα για να δείτε στην ειδική σας ανασκόπηση μέσα στην εφαρμογή του Spotify.\n\nΑν σου αρέσει η μουσική, μπορείς να πας σε συναυλίες ή να δεις το Spotify Wrapped για να μάθεις τι μουσική άκουσες φέτος.\n\nΠηγές:\n- https://www.newsbomb.gr/politismos/story/1698593/oi-onirama-sto-theatro-alsos-dei-23-24-kai-25-dekemvriou\n- https://www.tovima.gr/2025/12/03/texnologia/spotify-wrapped-2025-pos-na-vreite-to-diko-sas-ti-neo-yparxei/",
-      "sources": [
+        },
         {
-          "url": "https://www.newsbomb.gr/politismos/story/1698593/oi-onirama-sto-theatro-alsos-dei-23-24-kai-25-dekemvriou",
+          "url": "https://www.newsbomb.gr/sports/podosfairo/story/1698626/panathinaikos-kifisia-1-0-kakokairia-theamatos-alla-diatirise-to-apolyto",
           "sourceName": "Newsbomb.gr"
         },
         {
-          "url": "https://www.tovima.gr/2025/12/03/texnologia/spotify-wrapped-2025-pos-na-vreite-to-diko-sas-ti-neo-yparxei/",
-          "sourceName": "TO BHMA"
+          "url": "https://www.tanea.gr/2025/12/03/sports/football/panathinaikos-kifisia-1-0-sto-relanti/",
+          "sourceName": "TA NEA"
         }
       ],
-      "createdAt": "2025-12-03T17:52:56.148Z"
+      "createdAt": "2025-12-03T20:36:31.095Z"
     },
     {
-      "id": "54936a54-d1cd-454b-b210-4a8c8a7376a3",
+      "id": "0f0ce4da-1c0f-413d-b6c4-a1d54690fe33",
       "contentType": "agent_lifestyle",
       "category": "theatre",
       "date": "2025-12-03",
       "title": "Θέατρο και παραστάσεις σε απλά λόγια",
-      "simpleText": "Θέατρο τον Δεκέμβριο: Απεργία, νέα παράσταση και περιοδικό\n\nΑυτές τις μέρες υπάρχουν νέα για το θέατρο στην Ελλάδα. Στις 5 Δεκεμβρίου, οι ηθοποιοί θα κάνουν απεργία. Αυτό σημαίνει ότι δεν θα έχουν παραστάσεις εκείνη την ημέρα. Ζητούν καλύτερες συμφωνίες για τη δουλειά τους.\n\nΤην Κυριακή βγαίνει το νέο περιοδικό STAGE. Μέσα θα έχει φωτογραφίες και συνεντεύξεις με ηθοποιούς και σκηνοθέτες. Θα δείχνει πώς γίνονται οι πρόβες και τι γίνεται πίσω από τη σκηνή.\n\nΕπίσης, από τις 11 Δεκεμβρίου στο Θέατρο Κυκλάδων παίζεται η παράσταση \"Αρχιμάστορας Σόλνες\". Μιλά για έναν αρχιτέκτονα που φτιάχνει κτίρια αλλά έχει προβλήματα στη ζωή του. Ο πρωταγωνιστής είναι ο Άρης Λεμπεσόπουλος. Το έργο δείχνει πόσο δύσκολη είναι η δημιουργία και τη σχέση του με τον εαυτό μας.\n\nΑν σου αρέσει το θέατρο, μπορείς να πας στην παράσταση ή να διαβάσεις το περιοδικό για να μάθεις περισσότερα.\n\nΠηγές:  \n- https://www.tovima.gr/2025/12/03/media/ayti-tin-kyriaki-me-to-vima-to-periodiko-stage-kykloforei-me-freskia-matia-ton-theatriko-kosmo/  \n- https://www.tanea.gr/print/2025/12/03/lifearts/i-dimiourgikotita-mporei-na-ginei-katastreptiki/  \n- https://www.tovima.gr/2025/12/03/culture/apergia-ton-ithopoion-stis-5-dekemvriou-ta-theatra-pou-katevazoun-rola/",
+      "simpleText": "Οι ηθοποιοί απεργούν και ένα νέο θεατρικό περιοδικό κυκλοφορεί\n\nΤην Παρασκευή 5 Δεκεμβρίου, οι ηθοποιοί στην Ελλάδα θα κάνουν απεργία. Αυτό σημαίνει ότι πολλά θέατρα δεν θα έχουν παραστάσεις εκείνη τη μέρα. Ο Σύλλογος Ελλήνων Ηθοποιών ζήτησε η απεργία να γίνει για να έχουν καλύτερους όρους στη δουλειά τους. Οι ηθοποιοί θέλουν συμφωνία για όλους.\n\nΕπίσης, αυτή την Κυριακή θα κυκλοφορήσει ένα νέο περιοδικό για το θέατρο που λέγεται STAGE. Εκεί θα βρεις φωτογραφίες, συνεντεύξεις, και ιστορίες για ηθοποιούς και σκηνοθέτες. Το περιοδικό δείχνει πώς είναι η προετοιμασία πριν από μια παράσταση.\n\nΑν σου αρέσει το θέατρο, μπορείς να διαβάσεις το περιοδικό για να μάθεις περισσότερα για τους αγαπημένους σου ηθοποιούς!\n\nΠηγές:\n- TO BHMA – [Νέο περιοδικό για το θέατρο κυκλοφορεί την Κυριακή](https://www.tovima.gr/2025/12/03/media/ayti-tin-kyriaki-me-to-vima-to-periodiko-stage-kykloforei-me-freskia-matia-ton-theatriko-kosmo/)\n- TO BHMA – [Απεργία ηθοποιών στα θέατρα](https://www.tovima.gr/2025/12/03/culture/apergia-ton-ithopoion-stis-5-dekemvriou-ta-theatra-pou-katevazoun-rola/)",
       "sources": [
         {
           "url": "https://www.tovima.gr/2025/12/03/media/ayti-tin-kyriaki-me-to-vima-to-periodiko-stage-kykloforei-me-freskia-matia-ton-theatriko-kosmo/",
           "sourceName": "TO BHMA"
         },
         {
-          "url": "https://www.tanea.gr/print/2025/12/03/lifearts/i-dimiourgikotita-mporei-na-ginei-katastreptiki/",
-          "sourceName": "TA NEA"
-        },
-        {
           "url": "https://www.tovima.gr/2025/12/03/culture/apergia-ton-ithopoion-stis-5-dekemvriou-ta-theatra-pou-katevazoun-rola/",
           "sourceName": "TO BHMA"
         }
       ],
-      "createdAt": "2025-12-03T17:53:04.663Z"
+      "createdAt": "2025-12-03T20:36:37.012Z"
     },
     {
-      "id": "092e5b9b-b89d-4e47-a765-800379f6433c",
+      "id": "a7772219-4ba8-4b00-9b65-a188883b592b",
       "contentType": "agent_lifestyle",
       "category": "fun",
       "date": "2025-12-03",
       "title": "Ιδέες για βόλτες και διασκέδαση",
-      "simpleText": "Αστείο μεταξύ πρίγκιπα Χάρι και Μέγκαν & Τυχερός αγρότης\n\nΟ πρίγκιπας Χάρι έκανε αστείο στη γυναίκα του, Μέγκαν Μαρκλ, σε μια τηλεοπτική εκπομπή για τα Χριστούγεννα. Είπε πως το φαγητό της δεν ήταν τόσο νόστιμο όσο της μαμάς του, αλλά ήταν για πλάκα και γελούσαν όλοι.\n\nΈνας αγρότης κέρδισε πολλές φορές σε τυχερά παιχνίδια μέσα σε έναν χρόνο. Κέρδισε 6.000 φορές, κάτι που είναι πολύ σπάνιο. Δεν ξέρουμε αν ήταν πολύ τυχερός ή αν είχε κάποιον τρόπο να κερδίζει πιο εύκολα.\n\nΑν σου αρέσουν τα χριστουγεννιάτικα αστεία ή οι ιστορίες τύχης, αυτές οι ειδήσεις είναι καλές για να διαβάσεις. Μπορείς να μάθεις πώς το γέλιο και η τύχη παίζουν μεγάλο ρόλο στη ζωή μας.\n\nΠηγές:\n- https://www.newsbomb.gr/kosmos/story/1698580/to-sxolio-tou-prigkipa-xari-sto-geyma-tis-megkan-markl-den-einai-toso-kalo-oso-tis-mamas-sou\n- https://www.tovima.gr/2025/12/03/society/opekepe-agrotis-kerdise-6-000-fores-se-tyxera-paixnidia-se-ena-xrono/",
+      "simpleText": "Η Θεσσαλονίκη άναψε το χριστουγεννιάτικο δέντρο στην πλατεία\n\nΣτη Θεσσαλονίκη, έγινε μεγάλη γιορτή για τα Χριστούγεννα. Το χριστουγεννιάτικο δέντρο στην πλατεία Αριστοτέλους άναψε με πολλά φώτα. Παρά τη βροχή, μαζεύτηκαν πολλοί άνθρωποι στην πλατεία για να χαρούν μαζί.\n\nΟ δήμαρχος, Στέλιος Αγγελούδης, άναψε το ψηλό δέντρο που έχει ύψος 18 μέτρα. Ευχήθηκε σε όλους «χρόνια πολλά». Ο κόσμος χάρηκε πολύ με τα μεγάλα πυροτεχνήματα που φώτισαν τον ουρανό. Ο αντιδήμαρχος είπε: δεν φοβόμαστε τη βροχή και ευχαρίστησε τους ανθρώπους που βοήθησαν για τη γιορτή.\n\nΤην εκδήλωση παρουσίασε η γνωστή παρουσιάστρια Μαρία Μπεκατώρου. Τραγούδησε ο Αντώνης Ρέμος και οι άνθρωποι χόρεψαν. Έπαιξε και η Φιλαρμονική Ορχήστρα παραδοσιακά κάλαντα. Για την ασφάλεια, έκλεισαν και κάποιοι δρόμοι.\n\nΑν σου αρέσουν τα Χριστούγεννα, μπορείς να δεις και εσύ φώτα και γιορτές στην πόλη σου.\n\nΠηγές:\n- ERT News – [ertnews.gr](https://www.ertnews.gr/ert3/thessaloniki-fotagogithike-to-xristougenniatiko-dentro-stin-plateia-aristotelous-2/)\n- Newsbomb.gr",
       "sources": [
         {
-          "url": "https://www.newsbomb.gr/kosmos/story/1698580/to-sxolio-tou-prigkipa-xari-sto-geyma-tis-megkan-markl-den-einai-toso-kalo-oso-tis-mamas-sou",
-          "sourceName": "Newsbomb.gr"
-        },
-        {
-          "url": "https://www.tovima.gr/2025/12/03/society/opekepe-agrotis-kerdise-6-000-fores-se-tyxera-paixnidia-se-ena-xrono/",
-          "sourceName": "TO BHMA"
+          "url": "https://www.ertnews.gr/ert3/thessaloniki-fotagogithike-to-xristougenniatiko-dentro-stin-plateia-aristotelous-2/",
+          "sourceName": "ERT News, Newsbomb.gr"
         }
       ],
-      "createdAt": "2025-12-03T17:53:11.323Z"
+      "createdAt": "2025-12-03T20:36:43.349Z"
     }
   ]
 }
