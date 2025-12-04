@@ -21,7 +21,7 @@
       position: relative;
     }
 
-    /* φλου full-screen backround για σοβαρές ειδήσεις */
+    /* φλου full-screen backround για σοβαρές και lifestyle ειδήσεις */
     .article-bg {
       position: fixed;
       inset: 0;
@@ -140,7 +140,7 @@
   </style>
 </head>
 <body>
-  <!-- full-screen background για σοβαρές ειδήσεις -->
+  <!-- full-screen background για σοβαρές & lifestyle ειδήσεις -->
   <div id="article-bg" class="article-bg" style="display:none;"></div>
 
   <header class="site-header">
@@ -276,10 +276,13 @@
       };
     }
 
+    /* ---------- Background helpers ---------- */
+
+    // σοβαρές (digest) ανά topic
     function seriousBackgroundForTopic(topic) {
       switch (topic) {
         case "politics_economy":
-          return "images/serious/politics.png"; // προσαρμοσμένο σε png
+          return "images/serious/politics.png"; // αν θέλεις, μπορείς να το αλλάξεις σε .jpg
         case "social":
           return "images/serious/social.png";
         case "world":
@@ -294,6 +297,46 @@
       if (!bgEl) return;
       const url = seriousBackgroundForTopic(topic);
       if (!url) {
+        bgEl.style.display = "none";
+        bgEl.style.backgroundImage = "";
+        return;
+      }
+      bgEl.style.backgroundImage = "url('" + url + "')";
+      bgEl.style.display = "block";
+    }
+
+    // lifestyle & απλές κατηγορίες ανά category
+    function lifestyleBackgroundForCategory(category) {
+      switch (category) {
+        case "serious":
+          return "images/categories/serious.jpg";
+        case "sports":
+          return "images/categories/sports.jpg";
+        case "movies":
+          return "images/categories/movies.jpg";
+        case "series":
+          return "images/categories/series.jpg";
+        case "music":
+          return "images/categories/music.jpg";
+        case "theatre":
+          return "images/categories/theatre.jpg";
+        case "fun":
+          return "images/categories/fun.jpg";
+        case "other":
+          return "images/categories/other.jpg";
+        case "all":
+          return "images/categories/all.jpg";
+        default:
+          return null;
+      }
+    }
+
+    function setLifestyleBackground(category) {
+      const bgEl = document.getElementById("article-bg");
+      if (!bgEl) return;
+      const url = lifestyleBackgroundForCategory(category);
+      if (!url) {
+        // αν δεν έχουμε αντίστοιχη εικόνα, απενεργοποιούμε το background
         bgEl.style.display = "none";
         bgEl.style.backgroundImage = "";
         return;
@@ -403,6 +446,11 @@
         const displayTitle = article.simpleTitle || article.title || "";
         const cleaned = cleanMarkdown(article.simpleText || "");
 
+        // lifestyle / απλές κατηγορίες background
+        if (article.category) {
+          setLifestyleBackground(article.category);
+        }
+
         titleEl.textContent = displayTitle;
         bodyEl.innerHTML = cleaned.replace(/\n/g, "<br/>");
 
@@ -503,7 +551,7 @@
         const displayTitle = article.title || "Σοβαρή είδηση";
         const cleaned = cleanMarkdown(article.simpleText || "");
 
-        // background ανά topic
+        // background ανά topic (serious digest)
         if (article.topic) {
           setSeriousBackground(article.topic);
         }
