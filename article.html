@@ -63,7 +63,7 @@
       font-weight: 800;
       margin-bottom: 0.8rem;
       color: #111827;
-      text-align: center; /* ✅ κέντρο τίτλου */
+      text-align: center;
     }
 
     .article-image-wrapper {
@@ -195,21 +195,51 @@
         .replace(/'/g, "&#39;");
     }
 
-    // Αφαιρούμε ενότητα "Πηγές:" που μπορεί να έχει γράψει το LLM
+    // Αφαιρούμε ΟΛΕΣ τις ενότητες "Πηγές" που μπορεί να έχει γράψει το LLM
     function stripSourcesSection(text) {
       if (!text) return "";
-      const markerIndex = text.lastIndexOf("Πηγές:");
-      if (markerIndex === -1) return text;
-      return text.slice(0, markerIndex).trim();
+
+      const lines = text.split(/\r?\n/);
+      let firstSourcesIndex = -1;
+
+      for (let i = 0; i < lines.length; i++) {
+        const trimmed = lines[i].trim();
+        // Πιάνουμε γραμμές τύπου "Πηγές", "Πηγές:", "**Πηγές:**" κτλ.
+        if (/^(\*+)?\s*Πηγές:?/i.test(trimmed)) {
+          firstSourcesIndex = i;
+          break;
+        }
+      }
+
+      if (firstSourcesIndex === -1) {
+        return text;
+      }
+
+      return lines.slice(0, firstSourcesIndex).join("\n").trim();
     }
 
     function cleanMarkdown(text) {
       if (!text) return "";
-      const withoutSources = stripSourcesSection(text);
-      return withoutSources
+
+      // 1) Βγάζουμε οτιδήποτε έρχεται μετά την πρώτη γραμμή "Πηγές"
+      let cleaned = stripSourcesSection(text);
+
+      // 2) Βγάζουμε markdown links: [τίτλος](url) -> "τίτλος"
+      cleaned = cleaned.replace(
+        /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+        "$1"
+      );
+
+      // 3) Βγάζουμε γυμνά urls τύπου https://...
+      cleaned = cleaned.replace(/https?:\/\/[^\s)]+/g, "");
+
+      // 4) Βγάζουμε **bold** και ### headings
+      cleaned = cleaned
         .replace(/\*\*(.+?)\*\*/g, "$1")
         .replace(/###\s*/g, "")
         .trim();
+
+      return cleaned;
     }
 
     // 🔊 Κατάσταση για play / pause / resume
@@ -282,7 +312,7 @@
     function seriousBackgroundForTopic(topic) {
       switch (topic) {
         case "politics_economy":
-          return "images/serious/politics.png"; // αν θέλεις, μπορείς να το αλλάξεις σε .jpg
+          return "images/serious/politics.png";
         case "social":
           return "images/serious/social.png";
         case "world":
@@ -336,7 +366,6 @@
       if (!bgEl) return;
       const url = lifestyleBackgroundForCategory(category);
       if (!url) {
-        // αν δεν έχουμε αντίστοιχη εικόνα, απενεργοποιούμε το background
         bgEl.style.display = "none";
         bgEl.style.backgroundImage = "";
         return;
@@ -617,11 +646,72 @@
       }
     }
 
+    async function loadLifestyleArticle({
+      idParam,
+      categoryParam,
+      titleEl,
+      bodyEl,
+      sourceEl,
+      listenBtn,
+    }) {
+      try {
+        const res = await fetch("lifestyle.json?cachebust=" + Date.now());
+        if (!res.ok) {
+          throw new Error("HTTP " + res.status);
+        }
+        const data = await res.json();
+        const list = Array.isArray(data.articles) ? data.articles : [];
+
+        if (!list.length) {
+          titleEl.textContent = "Δεν βρέθηκαν lifestyle ειδήσεις";
+          bodyEl.textContent =
+            "Δεν υπάρχει διαθέσιμο άρθρο για αυτή την κατηγορία αυτή τη στιγμή.";
+          listenBtn.disabled = true;
+          return;
+        }
+
+        let article = null;
+
+        if (idParam) {
+          article = list.find((a) => String(a.id) === String(idParam));
+        }
+        if (!article && categoryParam) {
+          article = list.find((a) => a.category === categoryParam);
+        }
+        if (!article) {
+          article = list[0];
+        }
+
+        const displayTitle = article.title || "Ενημέρωση σε απλά λόγια";
+        const cleaned = cleanMarkdown(article.simpleText || "");
+
+        if (article.category) {
+          setLifestyleBackground(article.category);
+        }
+
+        titleEl.textContent = displayTitle;
+        bodyEl.innerHTML = cleaned.replace(/\n/g, "<br/>");
+
+        renderSourcesBlock(sourceEl, article, null);
+
+        document.title = displayTitle + " - Εύκολες Ειδήσεις";
+
+        setupTtsButton(listenBtn, displayTitle, cleaned);
+      } catch (err) {
+        console.error(err);
+        titleEl.textContent = "Προέκυψε σφάλμα";
+        bodyEl.textContent =
+          "Δεν μπόρεσα να φορτώσω το lifestyle άρθρο: " + err.message;
+        listenBtn.disabled = true;
+      }
+    }
+
     async function loadArticle() {
       const params = new URLSearchParams(window.location.search);
       const source = params.get("source") || "news";
       const idParam = params.get("id");
       const topicParam = params.get("topic");
+      const categoryParam = params.get("category");
 
       const titleEl = document.getElementById("article-title");
       const bodyEl = document.getElementById("article-body");
@@ -636,6 +726,15 @@
         await loadSeriousArticle({
           idParam,
           topicParam,
+          titleEl,
+          bodyEl,
+          sourceEl,
+          listenBtn,
+        });
+      } else if (source === "lifestyle") {
+        await loadLifestyleArticle({
+          idParam,
+          categoryParam,
           titleEl,
           bodyEl,
           sourceEl,
@@ -660,4 +759,5 @@
   </script>
 </body>
 </html>
+
 
