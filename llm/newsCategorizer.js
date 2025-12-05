@@ -26,7 +26,7 @@ async function classifyNewsArticle({ title, simpleText, rawText }) {
 
   const response = await openai.responses.create({
     model: "gpt-4o-mini",
-    system: NEWS_CATEGORY_SYSTEM_PROMPT,
+    instructions: NEWS_CATEGORY_SYSTEM_PROMPT,
     input: userContent,
     response_format: {
       type: "json_schema",

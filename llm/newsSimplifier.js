@@ -23,7 +23,7 @@ async function simplifyNewsArticle({ title, rawText, sourceUrl }) {
 
   const response = await openai.responses.create({
     model: "gpt-4.1",
-    system: NEWS_SIMPLIFY_SYSTEM_PROMPT,
+    instructions: NEWS_SIMPLIFY_SYSTEM_PROMPT,
     input: userContent,
   });
 
