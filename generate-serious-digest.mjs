@@ -1,6 +1,10 @@
 import fs from "fs/promises";
 import crypto from "crypto";
 import { openai } from "./llm/openaiClient.js";
+import {
+  SERIOUS_TOPICS_SYSTEM_PROMPT,
+  SERIOUS_DIGEST_SYSTEM_PROMPT,
+} from "./llm/seriousDigestPrompts.js";
 
 // Paths
 const NEWS_PATH = new URL("./news.json", import.meta.url);
@@ -80,64 +84,23 @@ async function classifySeriousArticles(seriousArticles) {
   const items = seriousArticles.map((a) => ({
     id: a.id,
     title: a.simpleTitle || a.title,
-    summary: (a.simpleText || "").slice(0, 700),
+    summary: (a.simpleText || "").slice(0, 800),
   }));
-
-  const systemInstructions = `
-Είσαι βοηθός που κατατάσσει σοβαρές ειδήσεις σε θεματικές κατηγορίες.
-
-Θεματικές:
-- "politics_economy":
-  Πολιτική, κυβέρνηση, κόμματα, εκλογές, βουλή, δημόσια διοίκηση,
-  εξωτερική πολιτική, διπλωματία, ευρωπαϊκή πολιτική, οικονομία,
-  φόροι, μισθοί, συντάξεις, τράπεζες, ΔΝΤ, Ε.Ε. κτλ.
-  Εδώ βάζεις ειδήσεις που έχουν ξεκάθαρα ΠΟΛΙΤΙΚΟ ή ΟΙΚΟΝΟΜΙΚΟ χαρακτήρα
-  (νόμοι, μέτρα, αποφάσεις, δηλώσεις υπουργών, οικονομικές ανακοινώσεις).
-
-- "social":
-  Κοινωνικά θέματα, εκπαίδευση, σχολεία, πανεπιστήμια, υγεία, νοσοκομεία,
-  κοινωνικό κράτος, εργασιακά, απεργίες, διαμαρτυρίες, κοινωνικές δράσεις,
-  ατυχήματα, τροχαία, εγκλήματα, έρευνες της αστυνομίας, φωτιές,
-  φυσικές καταστροφές, θέματα κυκλοφορίας και κίνησης στους δρόμους,
-  κοινωνικά προβλήματα (φτώχεια, στέγαση κ.λπ.).
-  ΙΔΙΩΣ:
-  - Τροχαία δυστυχήματα ή ατυχήματα στην Ελλάδα → ΠΑΝΤΑ "social"
-  - Μεγάλη κίνηση, ουρές, κλειστοί δρόμοι, προβλήματα στις μετακινήσεις
-    στην Ελλάδα → "social", όχι "world".
-
-- "world":
-  Διεθνή θέματα, παγκόσμια γεγονότα, πόλεμοι, διεθνείς κρίσεις,
-  διεθνής πολιτική, παγκόσμια οικονομία, γεγονότα σε άλλες χώρες.
-  Βάζεις εδώ ειδήσεις όπου το κύριο γεγονός:
-  - συμβαίνει σε άλλη χώρα (εκτός Ελλάδας) ή
-  - αφορά καθαρά διεθνείς οργανισμούς / διεθνείς σχέσεις.
-
-- "other":
-  Οτιδήποτε δεν ταιριάζει ξεκάθαρα σε καμία από τις παραπάνω.
-
-Σημαντικά κριτήρια:
-
-- Αν το γεγονός είναι ΤΡΟΧΑΙΟ, ΑΤΥΧΗΜΑ, ΕΓΚΛΗΜΑ ή ΦΥΣΙΚΗ ΚΑΤΑΣΤΡΟΦΗ
-  μέσα στην Ελλάδα, να το βάζεις σχεδόν πάντα "social", όχι "world".
-- Αν διστάζεις ανάμεσα σε "world" και "social" ή "politics_economy"
-  για ένα γεγονός που γίνεται στην Ελλάδα, προτίμησε "social".
-- "world" χρησιμοποίησέ το μόνο αν η βασική ιστορία αφορά άλλη χώρα
-  ή καθαρά διεθνές πλαίσιο (π.χ. πόλεμος σε άλλη χώρα, G7, ΝΑΤΟ, ΟΗΕ κτλ.).
-
-Πάντα πρέπει να διαλέγεις ΜΙΑ τιμή από:
-"politics_economy", "social", "world", "other".
-`;
 
   const userPrompt = `
 Παρακάτω είναι λίστα με σοβαρές ειδήσεις σε JSON.
 
-Για ΚΑΘΕ είδηση, αποφάσισε σε ποια θεματική ανήκει και ΕΠΕΣΤΡΕΨΕ
-ΜΟΝΟ JSON πίνακα με αντικείμενα της μορφής:
+Για ΚΑΘΕ είδηση, πρέπει να διαλέξεις ΜΙΑ από τις παρακάτω θεματικές τιμές:
+- "politics_economy"
+- "social"
+- "world"
+- "other"
+
+και να επιστρέψεις ΜΟΝΟ ένα JSON array της μορφής:
 
 [
   { "id": "<id-1>", "topic": "politics_economy" },
-  { "id": "<id-2>", "topic": "social" },
-  ...
+  { "id": "<id-2>", "topic": "social" }
 ]
 
 Χρησιμοποίησε ΜΟΝΟ αυτά τα strings:
@@ -149,9 +112,31 @@ ${JSON.stringify(items, null, 2)}
 
   const response = await openai.responses.create({
     model: "gpt-4o-mini",
-    instructions: systemInstructions,
+    instructions: SERIOUS_TOPICS_SYSTEM_PROMPT,
     input: userPrompt,
-    max_output_tokens: 1200,
+    max_output_tokens: 800,
+    response_format: {
+      type: "json_schema",
+      json_schema: {
+        name: "SeriousTopics",
+        schema: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              id: { type: "string" },
+              topic: {
+                type: "string",
+                enum: ["politics_economy", "social", "world", "other"],
+              },
+            },
+            required: ["id", "topic"],
+            additionalProperties: false,
+          },
+        },
+        strict: true,
+      },
+    },
   });
 
   const text = extractTextFromResponse(response).trim();
@@ -160,8 +145,17 @@ ${JSON.stringify(items, null, 2)}
   try {
     parsed = JSON.parse(text);
   } catch (err) {
-    console.error("❌ Αποτυχία JSON parse στην ταξινόμηση σοβαρών ειδήσεων:", err);
-    return {};
+    console.error(
+      "❌ Αποτυχία JSON parse στην ταξινόμηση σοβαρών ειδήσεων, όλα → 'social':",
+      err
+    );
+    // Fallback: αν γίνει χαμός, τουλάχιστον όλα να θεωρηθούν "social"
+    /** @type {Record<string, string>} */
+    const allSocial = {};
+    for (const a of seriousArticles) {
+      allSocial[a.id] = "social";
+    }
+    return allSocial;
   }
 
   /** @type {Record<string, string>} */
@@ -177,7 +171,13 @@ ${JSON.stringify(items, null, 2)}
     topicById[id] = topic;
   }
 
-  // Μικρό log για να βλέπεις την κατανομή
+  // Ό,τι δεν ταξινομήθηκε ρητά από το μοντέλο, default "social"
+  for (const a of seriousArticles) {
+    if (!topicById[a.id]) {
+      topicById[a.id] = "social";
+    }
+  }
+
   const counts = { politics_economy: 0, social: 0, world: 0, other: 0 };
   for (const t of Object.values(topicById)) {
     if (counts[t] !== undefined) counts[t]++;
@@ -223,52 +223,6 @@ async function generateDigestForTopic(topic, mainArticle, contextArticles) {
       publishedAt: a.publishedAt || null,
     }));
 
-  const systemPrompt = `
-Είσαι δημοσιογράφος στην Ελλάδα.
-Γράφεις σοβαρές ειδήσεις σε ΠΟΛΥ απλά ελληνικά
-για άτομα με ήπια νοητική υστέρηση και μαθησιακές δυσκολίες.
-
-Θεματικές:
-- πολιτική & οικονομία,
-- κοινωνικά θέματα,
-- παγκόσμια επικαιρότητα.
-
-Πάντα:
-- Χρησιμοποιείς ΜΙΚΡΕΣ, απλές προτάσεις.
-- Αποφεύγεις δύσκολες λέξεις. Αν χρειαστεί, τις εξηγείς με απλά λόγια.
-- Δεν γράφεις τεράστιες παραγράφους.
-- Δεν αντιγράφεις αυτούσιες φράσεις από τα άρθρα. Πάντα κάνεις παράφραση.
-- Χρησιμοποιείς ΜΟΝΟ πληροφορίες που βρίσκεις στα δεδομένα και στο web search.
-- Αν τα δεδομένα έχουν παλιές πληροφορίες, τις διορθώνεις/επικαιροποιείς
-  με βάση αυτά που θα βρεις στο web search.
-- Δεν αλλάζεις ΘΕΜΑ. Μένεις στο ίδιο βασικό γεγονός.
-
-Χειρισμός links και πηγών:
-- Δεν βάζεις ΠΟΤΕ links (π.χ. https://..., [τίτλος](url))
-  μέσα στις κανονικές παραγράφους του άρθρου.
-- Όλα τα links μπαίνουν ΜΟΝΟ στο τέλος, σε ενότητα "Πηγές:".
-- Αν υπάρχουν πολλές πηγές από το ίδιο site, μπορείς να τις ενώσεις
-  σε μία γραμμή.
-
-Μορφή εξόδου:
-- Πρώτη γραμμή: τίτλος (χωρίς #).
-- Μετά 3–6 μικρές παραγράφους, σε απλά ελληνικά.
-- Μπορείς να χρησιμοποιείς bullets αν βοηθάει (π.χ. λίστα σημείων).
-- Στο τέλος, ενότητα:
-
-Πηγές:
-- <όνομα site ή σύντομος τίτλος – url αν υπάρχει>
-- ...
-
-Κανόνες για την ενότητα "Πηγές":
-- Μην προσθέτεις δικές σου φανταστικές πηγές.
-- Χρησιμοποίησε ονόματα sites (π.χ. dnews.gr, ertnews.gr, kathimerini.gr).
-- Μπορείς να χρησιμοποιήσεις markdown links αν θέλεις
-  (π.χ. [dnews.gr](https://...)) αλλά ΜΟΝΟ στην ενότητα "Πηγές:".
-
-Όλο το κείμενο πρέπει να είναι σε ελληνικά.
-`;
-
   const userPrompt = `
 Σήμερα (${today}) γράφεις ένα άρθρο για: ${label}.
 
@@ -304,7 +258,7 @@ ${JSON.stringify(others, null, 2)}
 
   const response = await openai.responses.create({
     model: "gpt-4.1", // Μπορείς να το αλλάξεις σε gpt-4.1-mini αν θέλεις χαμηλότερο κόστος
-    instructions: systemPrompt,
+    instructions: SERIOUS_DIGEST_SYSTEM_PROMPT,
     tools: [{ type: "web_search_preview" }],
     input: userPrompt,
     max_output_tokens: 1600,
