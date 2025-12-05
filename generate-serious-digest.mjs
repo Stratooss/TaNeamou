@@ -120,19 +120,26 @@ ${JSON.stringify(items, null, 2)}
         type: "json_schema",
         name: "SeriousTopics",
         schema: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              id: { type: "string" },
-              topic: {
-                type: "string",
-                enum: ["politics_economy", "social", "world", "other"],
+          type: "object",
+          properties: {
+            results: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  id: { type: "string" },
+                  topic: {
+                    type: "string",
+                    enum: ["politics_economy", "social", "world", "other"],
+                  },
+                },
+                required: ["id", "topic"],
+                additionalProperties: false,
               },
             },
-            required: ["id", "topic"],
-            additionalProperties: false,
           },
+          required: ["results"],
+          additionalProperties: false,
         },
         strict: true,
       },
@@ -158,9 +165,12 @@ ${JSON.stringify(items, null, 2)}
     return allSocial;
   }
 
+  // Accept either wrapped { results: [...] } or bare array fallback
+  const rows = Array.isArray(parsed?.results) ? parsed.results : parsed;
+
   /** @type {Record<string, string>} */
   const topicById = {};
-  for (const row of parsed) {
+  for (const row of rows || []) {
     if (!row || typeof row !== "object") continue;
     const { id, topic } = row;
     if (!id || typeof id !== "string") continue;
