@@ -32,18 +32,16 @@ async function classifyNewsArticle({ title, simpleText, rawText }) {
       format: {
         type: "json_schema",
         name: "news_category",
-        json_schema: {
-          schema: {
-            type: "object",
-            properties: {
-              category: { type: "string", enum: CATEGORY_KEYS },
-              reason: { type: "string" },
-            },
-            required: ["category", "reason"],
-            additionalProperties: false,
+        schema: {
+          type: "object",
+          properties: {
+            category: { type: "string", enum: CATEGORY_KEYS },
+            reason: { type: "string" },
           },
-          strict: true,
+          required: ["category", "reason"],
+          additionalProperties: false,
         },
+        strict: true,
       },
     },
   });

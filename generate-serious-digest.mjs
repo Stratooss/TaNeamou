@@ -119,24 +119,22 @@ ${JSON.stringify(items, null, 2)}
       format: {
         type: "json_schema",
         name: "SeriousTopics",
-        json_schema: {
-          schema: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                id: { type: "string" },
-                topic: {
-                  type: "string",
-                  enum: ["politics_economy", "social", "world", "other"],
-                },
+        schema: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              id: { type: "string" },
+              topic: {
+                type: "string",
+                enum: ["politics_economy", "social", "world", "other"],
               },
-              required: ["id", "topic"],
-              additionalProperties: false,
             },
+            required: ["id", "topic"],
+            additionalProperties: false,
           },
-          strict: true,
         },
+        strict: true,
       },
     },
   });
