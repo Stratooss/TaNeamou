@@ -1,100 +1,62 @@
 {
-  "generatedAt": "2025-12-04T16:33:06.570Z",
+  "generatedAt": "2025-12-05T07:19:48.264Z",
   "articles": [
     {
-      "id": "199940fe-e584-476c-9f72-c28052c094de",
+      "id": "fec6daf2-6f09-4e5c-be5f-73f1f3d1c110",
       "contentType": "agent_lifestyle",
       "category": "sports",
-      "date": "2025-12-04",
+      "date": "2025-12-05",
       "title": "Τα αθλητικά της ημέρας με απλά λόγια",
-      "simpleText": "Ημερομηνία: 2025-12-04\n\nΟ προπονητής του Ολυμπιακού, ο κύριος Μεντιλίμπαρ, μίλησε για τον επόμενο αγώνα της ομάδας του με τον ΟΦΗ. Είπε ότι ο τίτλος του πρωταθλητή χειμώνα δεν είναι τόσο σημαντικός. Πιο πολύ τους νοιάζει να κερδίζουν κάθε αγώνα και να μένουν στην κορυφή της βαθμολογίας.\n\nΟ αγώνας με τον ΟΦΗ είναι πολύ σημαντικός για τον Ολυμπιακό. Η ομάδα ετοιμάζεται και όλοι θέλουν να παίξουν όσο καλύτερα μπορούν. Ο προπονητής ζήτησε από όλους να συνεχίσουν τις καλές εμφανίσεις, όχι μόνο τώρα, αλλά και στη συνέχεια.\n\nΑν σου αρέσει το ποδόσφαιρο, μπορείς να δεις τον αγώνα και να παρακολουθήσεις την προσπάθεια του Ολυμπιακού για τη νίκη.\n\nΠηγές:\n- Newsbomb.gr – https://www.newsbomb.gr/sports/podosfairo/story/1698836/olympiakos-o-titlos-tou-protathliti-xeimona-den-leei-tipota-oi-diloseis-tou-mentilimpar",
+      "simpleText": "Ημερομηνία: 2025-12-05\n\nΟ Παναθηναϊκός παίζει μπάσκετ στην Αθήνα. Η ομάδα θέλει να κερδίσει ξανά. Αν το καταφέρει, θα είναι η πέμπτη της νίκη στη σειρά. Όμως σήμερα έχει κάποιες απουσίες. Δεν θα παίξουν τέσσερις βασικοί παίκτες: ο Λεσόρ, ο Χολμς, ο Όσμαν και ο Σαμοντούροβ. Αυτό κάνει το ματς πιο δύσκολο.\n\nΗ ομάδα όμως ελπίζει να κάνει μια καλή εμφάνιση και να συνεχίσει να κερδίζει. Αν σου αρέσει το μπάσκετ, αυτή η προσπάθεια αξίζει να τη δεις!\n\nΠηγές:\n- Newsbomb.gr – https://www.newsbomb.gr/sports/mpasket/story/1698932/panathinaikos-valenthia-psaxnei-tin-pempti-seri-niki-se-poniro-mats",
       "sources": [
         {
-          "url": "https://www.newsbomb.gr/sports/podosfairo/story/1698836/olympiakos-o-titlos-tou-protathliti-xeimona-den-leei-tipota-oi-diloseis-tou-mentilimpar",
+          "url": "https://www.newsbomb.gr/sports/mpasket/story/1698932/panathinaikos-valenthia-psaxnei-tin-pempti-seri-niki-se-poniro-mats",
           "sourceName": "Newsbomb.gr"
         },
         {
-          "url": "https://www.newsbomb.gr/sports/mpasket/story/1698832/martineth-dyskola-tha-erthei-i-niki-ekei-na-kanoume-to-kalytero-paixnidi-mas",
-          "sourceName": "Newsbomb.gr"
-        },
-        {
-          "url": "https://www.newsbomb.gr/sports/podosfairo/story/1698826/aek-to-apolyto-build-up-13-pases-prin-apo-to-deytero-gol-vasiko-na-kerdizei-i-omada-vinteo",
-          "sourceName": "Newsbomb.gr"
-        },
-        {
-          "url": "https://www.tanea.gr/2025/12/04/sports/panathinaikos-epaggelmatiko-symvolaio-se-16xrono/",
+          "url": "https://www.tanea.gr/2025/12/05/sports/entoni-sygkinisi-sti-belgrade-arena-dakrysan-gia-ton-omprantovits-oi-opadoi-tis-partizan-vinteo/",
           "sourceName": "TA NEA"
         },
         {
-          "url": "https://www.newsbomb.gr/sports/podosfairo/story/1698810/sun-giouventous-kai-dortmount-exoun-ekfrasei-endiaferon-gia-mouzakiti",
-          "sourceName": "Newsbomb.gr"
+          "url": "https://www.tanea.gr/2025/12/04/sports/football/o-karetsas-ksanaxtypa-apiasto-gkol-kontra-stin-anterlext/",
+          "sourceName": "TA NEA"
         }
       ],
-      "createdAt": "2025-12-04T16:32:49.839Z"
+      "createdAt": "2025-12-05T07:19:39.096Z"
     },
     {
-      "id": "c96969d2-57ce-4943-b06a-3e3ae94e4c60",
+      "id": "25e757f4-a9cd-484f-8b1f-34bb5bc7ad7f",
       "contentType": "agent_lifestyle",
       "category": "music",
-      "date": "2025-12-04",
+      "date": "2025-12-05",
       "title": "Μουσική και συναυλίες σε απλά λόγια",
-      "simpleText": "Ημερομηνία: 2025-12-04\n\nΟ Joep Beving είναι γνωστός πιανίστας από την Ολλανδία. Το 2026 θα έρθει για πρώτη φορά στην Αθήνα. Η συναυλία του θα γίνει στις 23 Απριλίου, στον Φιλολογικό Σύλλογο Παρνασσός.\n\nΟ Beving θα παίξει κομμάτια από το νέο του άλμπουμ και άλλες μελωδίες που έχει γράψει. Στη σκηνή θα είναι μόνος του με το πιάνο. Η μουσική του είναι ήρεμη και βοηθά να χαλαρώσεις. Πολλοί άνθρωποι τον ακούν σε ψηφιακές πλατφόρμες.\n\nΗ συναυλία αρχίζει στις 21:00. Τα εισιτήρια κοστίζουν από 27 έως 45 ευρώ. Είναι μια καλή ευκαιρία για όσους αγαπούν τη χαλαρωτική μουσική.\n\nΠηγές:\n- TA NEA – https://www.tanea.gr/2025/12/04/lifearts/culture/joep-beving-o-pianistas-fainomeno-tou-minimalismou-gia-proti-fora-stin-ellada/",
+      "simpleText": "Ο Κωνσταντίνος Αργυρός είναι γνωστός τραγουδιστής. Μίλησε για τη σύζυγό του, την Αλεξάνδρα Νίκα. Είπε ότι είναι πολύ σημαντική για αυτόν και ότι γνωρίστηκαν πριν πολλά χρόνια.\n\nΟ Κωνσταντίνος είπε πως η Αλεξάνδρα τον στηρίζει στη δουλειά του. Η δουλειά του έχει πολλές δύσκολες στιγμές, ειδικά επειδή είναι στον χώρο της διασκέδασης. Η γυναίκα του είναι δίπλα του και τον βοηθά να είναι δυνατός. Αυτό του δίνει κουράγιο και χαρά.\n\nΑν σου αρέσει ο Κωνσταντίνος Αργυρός, μπορείς να χαρείς που είναι ευτυχισμένος στην προσωπική του ζωή.\n\nΠηγές:\n- Newsbomb.gr – https://www.newsbomb.gr/media-agb/story/1698975/o-konstantinos-argyros-apokalyptei-gia-ti-gynaika-tis-zois-tou-aleksandra-nika",
       "sources": [
         {
-          "url": "https://www.tanea.gr/2025/12/04/lifearts/culture/joep-beving-o-pianistas-fainomeno-tou-minimalismou-gia-proti-fora-stin-ellada/",
-          "sourceName": "TA NEA"
-        }
-      ],
-      "createdAt": "2025-12-04T16:32:53.770Z"
-    },
-    {
-      "id": "15291f15-8f4b-44d0-af49-8db0f0680311",
-      "contentType": "agent_lifestyle",
-      "category": "theatre",
-      "date": "2025-12-04",
-      "title": "Θέατρο και παραστάσεις σε απλά λόγια",
-      "simpleText": "Ημερομηνία: 2025-12-04\n\nΗ Δήμητρα Βλαγκοπούλου είναι γνωστή ηθοποιός. Μιλά για τη θεατρική παράσταση «Τα Χρόνια». Η παράσταση θα γίνει στο Θέατρο Θησείον. Το έργο βασίζεται στο βιβλίο της Αννί Ερνώ. Η Αννί Ερνώ έχει πάρει βραβείο Νόμπελ.\n\nΗ Δήμητρα λέει ότι η παράσταση είναι για τη μνήμη και τον χρόνο. Δεν μιλά για το παρελθόν σαν να κάνει απολογισμό. Μιλά για το πώς θυμόμαστε και ζούμε στιγμές. Η παράσταση είναι σαν ταξίδι σε αυτά που θυμόμαστε.\n\nΑν σου αρέσουν οι παραστάσεις για τη ζωή και τα συναισθήματα, μπορείς να δεις αυτή την παράσταση.\n\nΠηγές:\n- TO BHMA – https://www.tovima.gr/2025/12/04/culture/dimitra-vlagkopoulou-sto-vima-den-koito-piso-me-tin-ennoia-tou-apologismou/",
-      "sources": [
-        {
-          "url": "https://www.tovima.gr/2025/12/04/culture/dimitra-vlagkopoulou-sto-vima-den-koito-piso-me-tin-ennoia-tou-apologismou/",
-          "sourceName": "TO BHMA"
+          "url": "https://www.newsbomb.gr/media-agb/story/1698975/o-konstantinos-argyros-apokalyptei-gia-ti-gynaika-tis-zois-tou-aleksandra-nika",
+          "sourceName": "Newsbomb.gr"
         },
         {
-          "url": "https://www.tovima.gr/2025/12/04/culture/i-thryliki-pati-smith-erxetai-sto-dimotiko-theatro-lykavittou/",
-          "sourceName": "TO BHMA"
+          "url": "https://www.newsbomb.gr/politismos/story/1698934/natassa-bofiliou-i-anartisi-gia-tin-pagkosmia-periodeia-tis-me-ton-gianni-xaroyli",
+          "sourceName": "Newsbomb.gr"
         }
       ],
-      "createdAt": "2025-12-04T16:32:58.959Z"
+      "createdAt": "2025-12-05T07:19:43.156Z"
     },
     {
-      "id": "5afdcd4d-29ec-4983-b03e-e83178a473b3",
-      "contentType": "agent_lifestyle",
-      "category": "series",
-      "date": "2025-12-04",
-      "title": "Σειρές και τηλεόραση με απλά λόγια",
-      "simpleText": "Ημερομηνία: 2025-12-04\n\nΤο βράδυ της Τετάρτης 3 Δεκεμβρίου προβλήθηκε η εκπομπή «Αλ Τσαντίρι Νιουζ» στο κανάλι Mega. Την παρουσιάζει ο Λάκης Λαζόπουλος. Η εκπομπή είχε τους περισσότερους τηλεθεατές εκείνο το βράδυ. Πολλοί άνθρωποι την είδαν και ήταν η πιο δημοφιλής στην τηλεόραση.\n\nΑν σου αρέσουν οι σατιρικές εκπομπές, μπορείς να δεις το «Αλ Τσαντίρι Νιουζ» κάθε εβδομάδα.\n\nΠηγές:\n- TO BHMA – https://www.tovima.gr/2025/12/04/media/to-al-tsantiri-niouz-stathera-stin-koryfi-tis-tiletheasis/",
-      "sources": [
-        {
-          "url": "https://www.tovima.gr/2025/12/04/media/to-al-tsantiri-niouz-stathera-stin-koryfi-tis-tiletheasis/",
-          "sourceName": "TO BHMA"
-        }
-      ],
-      "createdAt": "2025-12-04T16:33:01.604Z"
-    },
-    {
-      "id": "1ba72914-62be-405b-8a3a-513b8ee4e096",
+      "id": "fc48f394-6cbe-4282-81f9-a9442012f92f",
       "contentType": "agent_lifestyle",
       "category": "fun",
-      "date": "2025-12-04",
+      "date": "2025-12-05",
       "title": "Ιδέες για βόλτες και διασκέδαση",
-      "simpleText": "Ημερομηνία: 2025-12-04\n\nΣτην Καρδίτσα υπάρχουν τρεις ταβέρνες που έχουν πολύ ωραίο φαγητό. Τα φαγητά τους είναι φτιαγμένα με προϊόντα από τον Θεσσαλικό κάμπο. Οι γεύσεις είναι ξεχωριστές και πολλοί λένε ότι μένουν αξέχαστες.\n\nΑν βρεθείς στην Καρδίτσα, είναι καλή ιδέα να δοκιμάσεις ένα γεύμα σε αυτές τις ταβέρνες. Μπορείς να πας με φίλους ή με την οικογένειά σου και να περάσεις ωραία. Το καλό φαγητό κάνει πάντα τη βόλτα πιο όμορφη.\n\nΠηγές:\n- TO BHMA – https://www.tovima.gr/2025/12/04/elliniki-kouzina/karditsa-3-staseis-gia-fagito-pou-tha-sas-meinoun-aksexastes/",
+      "simpleText": "Ημερομηνία: 2025-12-05\n\nΟ Εμπορικός Σύλλογος Αθηνών ανακοίνωσε ότι τα μαγαζιά στην Αθήνα θα έχουν νέο εορταστικό ωράριο. Το νέο ωράριο σημαίνει ότι τα μαγαζιά θα είναι ανοιχτά περισσότερες ώρες από το κανονικό.\n\nΤο εορταστικό ωράριο θα αρχίσει σύντομα και θα κρατήσει πολλές μέρες. Οι άνθρωποι θα μπορούν να κάνουν τα χριστουγεννιάτικα ψώνια τους πιο άνετα, όποτε θέλουν.\n\nΤις ακριβείς ώρες που θα είναι ανοιχτά τα μαγαζιά θα τις μάθουμε τις επόμενες μέρες. Έτσι, μπορείς να προγραμματίσεις καλύτερα τα ψώνια και να εκμεταλλευτείς τις προσφορές που θα υπάρχουν.\n\nΑν σου αρέσει να βγαίνεις για ψώνια στην πόλη, αυτή είναι μια καλή ευκαιρία για μια βόλτα!\n\nΠηγές:\n- Newsbomb.gr – https://www.newsbomb.gr/oikonomia/story/1698973/eortastiko-orario-sta-emporika-katastimata-pote-ksekina-i-efarmogi-tou",
       "sources": [
         {
-          "url": "https://www.tovima.gr/2025/12/04/elliniki-kouzina/karditsa-3-staseis-gia-fagito-pou-tha-sas-meinoun-aksexastes/",
-          "sourceName": "TO BHMA"
+          "url": "https://www.newsbomb.gr/oikonomia/story/1698973/eortastiko-orario-sta-emporika-katastimata-pote-ksekina-i-efarmogi-tou",
+          "sourceName": "Newsbomb.gr"
         }
       ],
-      "createdAt": "2025-12-04T16:33:06.570Z"
+      "createdAt": "2025-12-05T07:19:48.264Z"
     }
   ]
 }
