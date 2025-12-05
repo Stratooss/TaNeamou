@@ -7,6 +7,16 @@ import { classifyNewsArticle } from "./llm/newsCategorizer.js";
 
 export { CATEGORY_KEYS };
 
+const TARGET_CATEGORIES = [
+  "serious",
+  "sports",
+  "movies",
+  "music",
+  "theatre",
+  "series",
+  "fun",
+];
+
 // 👉 Θα γράφουμε το news.json δίπλα στο αρχείο αυτό
 const NEWS_JSON_PATH = new URL("./news.json", import.meta.url);
 
@@ -471,6 +481,16 @@ function groupArticlesByTopic(rawArticles) {
       .digest("hex")
       .slice(0, 12);
 
+    const uniqueSources = new Set(
+      group.articles
+        .map((a) => a.sourceName || a.sourceUrl || "")
+        .filter(Boolean)
+        .map((s) => s.toLowerCase())
+    );
+
+    const totalSourcesCount = uniqueSources.size || 1;
+    const isImportant = totalSourcesCount >= 2;
+
     topicGroups.push({
       id: groupId,
       key: group.title,
@@ -479,6 +499,8 @@ function groupArticlesByTopic(rawArticles) {
       imageUrl,
       videoUrl,
       publishedAt: latestPublishedAt,
+      totalSourcesCount,
+      isImportant,
     });
   }
 
@@ -545,22 +567,17 @@ async function run() {
 
   // 2️⃣ Ομαδοποιούμε σε "θέματα" (1 θέμα = 1 ή περισσότερα άρθρα για την ίδια είδηση)
   const topicGroups = groupArticlesByTopic(rawArticles);
-  console.log("Βρέθηκαν", topicGroups.length, "θεματικές ομάδες άρθρων.");
+  const importantTopicGroups = topicGroups.filter((g) => g.isImportant);
 
-  const multiSourceGroups = topicGroups.filter(
-    (g) => g.articles.length > 1
-  );
+  console.log(`Βρέθηκαν ${topicGroups.length} θεματικές ομάδες άρθρων.`);
   console.log(
-    "Θέματα με ΠΟΛΛΕΣ πηγές:",
-    multiSourceGroups.length,
-    "από",
-    topicGroups.length
+    `Θέματα με ΠΟΛΛΕΣ πηγές: ${importantTopicGroups.length} από ${topicGroups.length}`
   );
 
   const allArticles = [];
 
   // 3️⃣ Για κάθε θέμα, φτιάχνουμε ΕΝΑ νέο κείμενο με το LLM
-  for (const topic of topicGroups) {
+  for (const topic of importantTopicGroups) {
     console.log(
       "Απλοποιώ & συνθέτω για θέμα:",
       topic.title,
@@ -580,6 +597,13 @@ async function run() {
     }
 
     const categoryKey = normalizeCategory(result.rawCategory);
+
+    if (!TARGET_CATEGORIES.includes(categoryKey)) {
+      console.log(
+        `ℹ️ Παράχθηκε κατηγορία εκτός στόχων (${categoryKey}) – το topic δεν θα μπει στο news.json.`
+      );
+      continue;
+    }
 
     const primary = topic.articles[0];
 
@@ -632,6 +656,8 @@ async function run() {
       videoUrl: topic.videoUrl,
       publishedAt: topic.publishedAt,
     });
+
+    console.log(`✅ Προστέθηκε άρθρο κατηγορίας ${categoryKey} στο news.json`);
   }
 
   // TODO: σε επόμενο βήμα:
