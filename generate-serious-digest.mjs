@@ -117,7 +117,7 @@ ${JSON.stringify(items, null, 2)}
     max_output_tokens: 800,
     text: {
       format: "json_schema",
-      json_schema: {
+      schema: {
         name: "SeriousTopics",
         schema: {
           type: "array",

@@ -30,7 +30,7 @@ async function classifyNewsArticle({ title, simpleText, rawText }) {
     input: userContent,
     text: {
       format: "json_schema",
-      json_schema: {
+      schema: {
         name: "news_category",
         schema: {
           type: "object",
