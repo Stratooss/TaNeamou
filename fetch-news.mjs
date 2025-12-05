@@ -1,26 +1,11 @@
 import fs from "fs/promises";
 import Parser from "rss-parser";
-import OpenAI from "openai";
 import crypto from "crypto";
-import { NEWS_SIMPLIFY_INSTRUCTIONS } from "./newsLlmInstructions.js";
+import { CATEGORY_KEYS } from "./llm/newsCategories.js";
+import { simplifyNewsArticle } from "./llm/newsSimplifier.js";
+import { classifyNewsArticle } from "./llm/newsCategorizer.js";
 
-// Χρησιμοποιούμε το κλειδί από τα GitHub Secrets
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-// ✅ Εσωτερικές κατηγορίες που θα υποστηρίζουμε
-// Αυτές οι τιμές πρέπει να χρησιμοποιούνται και στο NEWS_SIMPLIFY_INSTRUCTIONS
-export const CATEGORY_KEYS = [
-  "serious",   // Σοβαρές ειδήσεις (οικονομία, πολιτική, σοβαρά κοινωνικά)
-  "sports",    // Αθλητισμός
-  "movies",    // Ταινίες
-  "music",     // Μουσική
-  "theatre",   // Θέατρο
-  "series",    // Σειρές
-  "fun",       // Διασκέδαση (bars, βόλτες, nightlife, εστιατόρια κτλ.)
-  "other",     // Ό,τι δεν ταιριάζει αλλού
-];
+export { CATEGORY_KEYS };
 
 // 👉 Θα γράφουμε το news.json δίπλα στο αρχείο αυτό
 const NEWS_JSON_PATH = new URL("./news.json", import.meta.url);
@@ -288,7 +273,8 @@ const TITLE_STOPWORDS = new Set([
 ]);
 
 // Κλήση στο AI για απλοποίηση + κατηγοριοποίηση + παραφρασμένο τίτλο
-// 🆕 ΠΛΕΟΝ παίρνει ΟΛΟ το "θέμα" (1 ή περισσότερα άρθρα).
+// Χρησιμοποιεί τα νέα, κοινά helpers simplifyNewsArticle και classifyNewsArticle
+// και τροφοδοτεί το LLM με όλα τα άρθρα της ίδιας θεματικής.
 async function simplifyAndClassifyText(topicGroup) {
   const { articles } = topicGroup;
   if (!articles || articles.length === 0) {
@@ -296,13 +282,9 @@ async function simplifyAndClassifyText(topicGroup) {
   }
 
   const parts = [];
-
   parts.push(
-    "Παρακάτω θα δεις πληροφορίες για ΜΙΑ είδηση, από ΕΝΑ ή ΠΕΡΙΣΣΟΤΕΡΑ άρθρα.\n" +
-      "Όλα τα άρθρα μιλούν για το ίδιο γεγονός. " +
-      "Χρησιμοποίησε όλες αυτές τις πληροφορίες σαν υλικό για να γράψεις ΕΝΑ νέο κείμενο σε πολύ απλά ελληνικά.\n" +
-      "ΜΗΝ γράφεις ξεχωριστά κομμάτια για κάθε άρθρο (π.χ. 'Στο Άρθρο 1 λέει...'). " +
-      "Πρέπει να είναι ΕΝΑ ενιαίο κείμενο."
+    "Παρακάτω είναι πληροφορίες για ΜΙΑ είδηση από ΕΝΑ ή ΠΕΡΙΣΣΟΤΕΡΑ άρθρα.\n" +
+      "Όλα μιλούν για το ίδιο γεγονός. Χρησιμοποίησε τα όλα μαζί σαν υλικό."
   );
 
   articles.forEach((article, index) => {
@@ -316,35 +298,29 @@ async function simplifyAndClassifyText(topicGroup) {
     );
   });
 
-  const input = parts.join("\n");
+  const combinedRawText = parts.join("\n");
+  const baseTitle = topicGroup.title || articles[0]?.title || "Είδηση";
+  const primarySourceUrl = articles[0]?.sourceUrl;
 
-  const response = await client.responses.create({
-    model: "gpt-4o-mini",
-    instructions: NEWS_SIMPLIFY_INSTRUCTIONS,
-    input,
+  const simplifiedText = await simplifyNewsArticle({
+    title: baseTitle,
+    rawText: combinedRawText,
+    sourceUrl: primarySourceUrl,
   });
 
-  const textOut = response.output_text;
-  try {
-    const parsed = JSON.parse(textOut);
-    return {
-      simplifiedText: parsed.simplifiedText || "",
-      simplifiedTitle: parsed.simplifiedTitle || parsed.simpleTitle || "",
-      rawCategory: parsed.category || "other",
-      isSensitive: Boolean(parsed.isSensitive),
-    };
-  } catch (err) {
-    console.error(
-      "JSON parse error από το μοντέλο, fallback σε απλό κείμενο:",
-      err
-    );
-    return {
-      simplifiedText: textOut,
-      simplifiedTitle: "",
-      rawCategory: "other",
-      isSensitive: false,
-    };
-  }
+  const { category, reason } = await classifyNewsArticle({
+    title: baseTitle,
+    simpleText: simplifiedText,
+    rawText: combinedRawText,
+  });
+
+  return {
+    simplifiedText,
+    simplifiedTitle: baseTitle,
+    rawCategory: category,
+    categoryReason: reason,
+    isSensitive: false,
+  };
 }
 
 // helper: είναι η είδηση μέσα στο τελευταίο 24ωρο;
@@ -595,8 +571,10 @@ async function run() {
     const result = await simplifyAndClassifyText(topic);
     if (!result || !result.simplifiedText) continue;
 
+    const isSensitive = Boolean(result.isSensitive);
+
     // Φιλτράρουμε ευαίσθητες ειδήσεις
-    if (result.isSensitive) {
+    if (isSensitive) {
       console.log("Παραλείπω ευαίσθητη είδηση:", topic.title);
       continue;
     }
@@ -648,7 +626,8 @@ async function run() {
       sources,
 
       category: categoryKey, // ✅ μία από τις CATEGORY_KEYS
-      isSensitive: false,
+      categoryReason: result.categoryReason || "",
+      isSensitive,
       imageUrl: topic.imageUrl,
       videoUrl: topic.videoUrl,
       publishedAt: topic.publishedAt,

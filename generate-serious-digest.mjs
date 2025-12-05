@@ -1,11 +1,6 @@
 import fs from "fs/promises";
-import OpenAI from "openai";
 import crypto from "crypto";
-
-// Ίδιο API key
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import { openai } from "./llm/openaiClient.js";
 
 // Paths
 const NEWS_PATH = new URL("./news.json", import.meta.url);
@@ -152,7 +147,7 @@ async function classifySeriousArticles(seriousArticles) {
 ${JSON.stringify(items, null, 2)}
 `;
 
-  const response = await client.responses.create({
+  const response = await openai.responses.create({
     model: "gpt-4o-mini",
     instructions: systemInstructions,
     input: userPrompt,
@@ -307,7 +302,7 @@ ${JSON.stringify(others, null, 2)}
 Επέστρεψε μόνο καθαρό κείμενο (markdown επιτρέπεται).
 `;
 
-  const response = await client.responses.create({
+  const response = await openai.responses.create({
     model: "gpt-4.1", // Μπορείς να το αλλάξεις σε gpt-4.1-mini αν θέλεις χαμηλότερο κόστος
     instructions: systemPrompt,
     tools: [{ type: "web_search_preview" }],
