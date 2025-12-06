@@ -57,26 +57,6 @@
       letter-spacing: 0.3px;
     }
 
-    .site-subtitle {
-      font-size: 1rem;
-      color: var(--text-muted);
-      margin-top: 0.2rem;
-    }
-
-    .site-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      padding: 0.3rem 0.75rem;
-      border-radius: 999px;
-      border: 1px solid var(--accent);
-      background: rgba(96, 165, 250, 0.1);
-      color: var(--text-main);
-      font-size: 0.95rem;
-      font-weight: 600;
-      letter-spacing: 0.05px;
-    }
-
     .section-title {
       color: var(--text-main);
     }
@@ -128,7 +108,6 @@
       box-shadow: 0 10px 20px rgba(0, 0, 0, 0.28);
       overflow: hidden;
       transition: transform 0.14s ease, border-color 0.14s ease, background-color 0.14s ease;
-      min-height: 270px;          /* πιο ψηλή κάρτα */
       width: 100%;
       max-width: 340px;
     }
@@ -148,19 +127,18 @@
       padding: 0;
     }
 
+    /* 🔵 ΕΔΩ: η κάρτα προσαρμόζεται στην εικόνα */
     .category-thumbnail-wrapper {
       width: 100%;
-      height: 220px;              /* ΜΕΓΑΛΗ εικόνα */
       border-radius: 0.9rem 0.9rem 0 0;
-      background: #020617;
-      border-bottom: 1px solid var(--card-border);
       overflow: hidden;
+      border-bottom: 1px solid var(--card-border);
+      background: transparent; /* για να μην φαίνεται μαύρο γύρω από εικόνες με διάφανο */
     }
 
     .category-thumbnail {
       width: 100%;
-      height: 100%;
-      object-fit: cover;
+      height: auto;     /* ΔΕΝ κόβει την εικόνα */
       display: block;
     }
 
@@ -227,12 +205,10 @@
   <!-- Επάνω μπάρα -->
   <header class="site-header">
     <div class="container">
-      <div class="d-flex flex-column align-items-start gap-2">
+      <div class="d-flex flex-column align-items-start gap-1">
         <div class="d-flex align-items-center gap-2 flex-wrap">
           <div class="site-title">📰 Εύκολα Νέα</div>
-          <span class="site-badge">Ειδήσεις σε απλά ελληνικά</span>
         </div>
-        <div class="site-subtitle">Καθαρή και απλή ενημέρωση για όλους</div>
       </div>
     </div>
   </header>
@@ -429,8 +405,7 @@
 
   <footer>
     <div class="container text-center">
-      Το «Εύκολα Νέα» είναι δοκιμαστικό project για απλή και ήρεμη ενημέρωση. Μάθε περισσότερα στο
-      <a href="https://github.com/Stratooss" target="_blank" rel="noopener noreferrer">GitHub</a>.
+      © Εύκολα Νέα
     </div>
   </footer>
 
