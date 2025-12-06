@@ -118,7 +118,7 @@
       gap: 1.5rem;
       max-width: 1100px;
       margin: 0 auto;
-      justify-items: center;  /* κεντράρει τις κάρτες μέσα στο grid */
+      justify-items: center;
     }
 
     .category-tile {
@@ -128,7 +128,7 @@
       box-shadow: 0 10px 20px rgba(0, 0, 0, 0.28);
       overflow: hidden;
       transition: transform 0.14s ease, border-color 0.14s ease, background-color 0.14s ease;
-      min-height: 230px;
+      min-height: 270px;          /* πιο ψηλή κάρτα */
       width: 100%;
       max-width: 340px;
     }
@@ -145,12 +145,12 @@
       height: 100%;
       text-decoration: none;
       color: inherit;
-      padding: 0;               /* αφαιρούμε padding, θα μπει μέσα στα sections */
+      padding: 0;
     }
 
     .category-thumbnail-wrapper {
       width: 100%;
-      height: 170px;            /* ΜΕΓΑΛΗ εικόνα στην κορυφή */
+      height: 220px;              /* ΜΕΓΑΛΗ εικόνα */
       border-radius: 0.9rem 0.9rem 0 0;
       background: #020617;
       border-bottom: 1px solid var(--card-border);
@@ -261,9 +261,7 @@
     <section class="mb-4 text-center">
       <h2 class="h5 mb-4 section-title">Τι νέα θα διαβάσουμε σήμερα;</h2>
 
-      <!-- 🔽 εδώ βάζεις τα free for commercial use thumbnails στο /images/categories/... -->
       <div class="category-grid">
-
         <!-- 1. Σοβαρές ειδήσεις -->
         <article class="category-tile">
           <a
