@@ -14,37 +14,83 @@
   />
 
   <style>
+    :root {
+      --bg: #020617;
+      --card-bg: #0b1224;
+      --card-border: rgba(148, 163, 184, 0.35);
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.18);
+      --text-main: #e5e7eb;
+      --text-muted: #9ca3af;
+    }
+
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background-color: #ffffff;
+      background-color: var(--bg);
+      color: var(--text-main);
       font-size: 18px;
-      line-height: 1.6;
+      line-height: 1.7;
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      color: #7dd3fc;
     }
 
     .site-header {
-      background: #1d4ed8;
-      color: white;
-      padding: 1.4rem 0;
-      margin-bottom: 1.4rem;
+      background: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.12), transparent 40%),
+        linear-gradient(145deg, #0f172a, #020617 60%);
+      color: var(--text-main);
+      padding: 1.6rem 0;
+      margin-bottom: 1.6rem;
+      border-bottom: 1px solid var(--card-border);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
     }
 
     .site-title {
       font-size: 2rem;
-      font-weight: 700;
+      font-weight: 800;
+      letter-spacing: 0.4px;
     }
 
     .site-subtitle {
-      font-size: 1.05rem;
-      margin-top: 0.3rem;
-      opacity: 0.98;
+      font-size: 1rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+
+    .site-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid var(--accent);
+      background: var(--accent-soft);
+      color: var(--text-main);
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.1px;
+    }
+
+    .section-title {
+      color: var(--text-main);
     }
 
     /* ===== Weather widget ===== */
     .weather-card {
       border-radius: 18px;
-      border: 1px solid #bfdbfe;
-      background: #eff6ff;
-      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.15);
+      border: 1px solid var(--card-border);
+      background: radial-gradient(circle at 80% 20%, rgba(56, 189, 248, 0.12), transparent 40%),
+        var(--card-bg);
+      box-shadow: 0 18px 30px rgba(0, 0, 0, 0.45);
+      color: var(--text-main);
     }
 
     .weather-icon {
@@ -54,7 +100,7 @@
 
     .weather-title {
       font-size: 1.1rem;
-      font-weight: 600;
+      font-weight: 700;
       margin-bottom: 0.15rem;
     }
 
@@ -64,32 +110,36 @@
 
     .weather-text-sub {
       font-size: 0.95rem;
-      color: #4b5563;
+      color: var(--text-muted);
       margin-top: 0.15rem;
     }
 
     /* ===== Πλέγμα κατηγοριών ===== */
     .category-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr)); /* 3 x 3 x 3 */
-      gap: 1.5rem;
-      max-width: 960px;          /* να μην απλώνεται σε όλο το container */
-      margin: 0 auto;            /* κεντρική στοίχιση πλέγματος */
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 1rem;
+      max-width: 1080px;
+      margin: 0 auto;
     }
 
     .category-tile {
-      border-radius: 18px;
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.16);
+      border-radius: 1rem;
+      background: radial-gradient(circle at 50% 20%, var(--accent-soft), transparent 55%),
+        var(--card-bg);
+      border: 1px solid var(--card-border);
+      box-shadow: 0 18px 30px rgba(15, 23, 42, 0.6);
       overflow: hidden;
-      transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease,
+        background 0.16s ease;
     }
 
     .category-tile:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.22);
-      background: #dbeafe;
+      transform: translateY(-4px);
+      box-shadow: 0 24px 36px rgba(0, 0, 0, 0.65);
+      border-color: var(--accent);
+      background: radial-gradient(circle at 50% 20%, rgba(56, 189, 248, 0.22), transparent 60%),
+        var(--card-bg);
     }
 
     .category-tile-link {
@@ -98,44 +148,68 @@
       height: 100%;
       text-decoration: none;
       color: inherit;
+      padding: 1rem;
+      gap: 0.9rem;
+    }
+
+    .category-tile-link:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+      border-radius: 1rem;
     }
 
     .category-thumbnail-wrapper {
-      width: 100%;
-      aspect-ratio: 1 / 1;   /* πιο "τετράγωνη", μεγαλύτερη κάρτα */
-      background: #dbeafe;
-      overflow: hidden;
+      width: 64px;
+      height: 64px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.18), rgba(56, 189, 248, 0.05));
+      border: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
     }
 
     .category-thumbnail {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      border-radius: 12px;
       display: block;
     }
 
     .category-tile-body {
-      padding: 1rem 1rem 1.1rem;
       display: flex;
       flex-direction: column;
-      gap: 0.2rem;
-      align-items: center;   /* κεντρική στοίχιση περιεχομένου */
-      text-align: center;
-    }
-
-    .category-tile-emoji {
-      font-size: 1.8rem;
-      margin-bottom: 0.1rem;
+      gap: 0.35rem;
     }
 
     .category-tile-title {
-      font-weight: 700;
-      font-size: 1.15rem;
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: var(--text-main);
     }
 
     .category-tile-subtitle {
-      font-size: 0.95rem;
-      opacity: 0.95;
+      font-size: 0.98rem;
+      color: var(--text-muted);
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--card-border);
+      padding: 1.4rem 0;
+      margin-top: 2rem;
+      color: var(--text-muted);
+      background: #050b17;
+    }
+
+    footer a {
+      color: var(--text-muted);
+    }
+
+    footer a:hover {
+      color: var(--accent);
     }
   </style>
 </head>
@@ -143,9 +217,12 @@
   <!-- Επάνω μπάρα -->
   <header class="site-header">
     <div class="container">
-      <div class="d-flex flex-column align-items-start gap-1">
-        <div class="site-title">📰 Εύκολα Νέα</div>
-        <div class="site-subtitle">Τα νέα σε απλά ελληνικά</div>
+      <div class="d-flex flex-column align-items-start gap-2">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <div class="site-title">📰 Εύκολα Νέα</div>
+          <span class="site-badge">Ειδήσεις σε απλά ελληνικά</span>
+        </div>
+        <div class="site-subtitle">Καθαρή και απλή ενημέρωση για όλους</div>
       </div>
     </div>
   </header>
@@ -172,7 +249,7 @@
 
     <!-- ΜΕΝΟΥ ΚΑΤΗΓΟΡΙΩΝ -->
     <section class="mb-4 text-center">
-      <h2 class="h5 mb-4">Τι νέα θα διαβάσουμε σήμερα;</h2>
+      <h2 class="h5 mb-4 section-title">Τι νέα θα διαβάσουμε σήμερα;</h2>
 
       <!-- 🔽 εδώ βάζεις τα free for commercial use thumbnails στο /images/categories/... -->
       <div class="category-grid">
@@ -180,7 +257,7 @@
         <!-- 1. Σοβαρές ειδήσεις (μένει στη σελίδα κατηγορίας) -->
         <article class="category-tile">
           <a
-            class="category-tile-link"
+            class="category-tile-link category-link"
             href="category.html?category=serious"
           >
             <div class="category-thumbnail-wrapper">
@@ -203,7 +280,7 @@
         <!-- 2. Χαρούμενες ειδήσεις (μένει στη σελίδα κατηγορίας) -->
         <article class="category-tile">
           <a
-            class="category-tile-link"
+            class="category-tile-link category-link"
             href="category.html?category=happy"
           >
             <div class="category-thumbnail-wrapper">
@@ -226,7 +303,7 @@
         <!-- 3. Αθλητισμός → lifestyle άρθρο κατευθείαν -->
         <article class="category-tile">
           <a
-            class="category-tile-link"
+            class="category-tile-link category-link"
             href="article.html?source=lifestyle&category=sports"
           >
             <div class="category-thumbnail-wrapper">
@@ -249,7 +326,7 @@
         <!-- 4. Τηλεόραση και σινεμά → lifestyle άρθρο -->
         <article class="category-tile">
           <a
-            class="category-tile-link"
+            class="category-tile-link category-link"
             href="article.html?source=lifestyle&category=screen"
           >
             <div class="category-thumbnail-wrapper">
@@ -272,7 +349,7 @@
         <!-- 5. Πολιτισμός → lifestyle άρθρο -->
         <article class="category-tile">
           <a
-            class="category-tile-link"
+            class="category-tile-link category-link"
             href="article.html?source=lifestyle&category=culture"
           >
             <div class="category-thumbnail-wrapper">
@@ -295,7 +372,7 @@
         <!-- 6. Διασκέδαση → lifestyle άρθρο -->
         <article class="category-tile">
           <a
-            class="category-tile-link"
+            class="category-tile-link category-link"
             href="article.html?source=lifestyle&category=fun"
           >
             <div class="category-thumbnail-wrapper">
@@ -318,7 +395,7 @@
         <!-- 7. Όλες οι ειδήσεις (μένει στη σελίδα κατηγορίας) -->
         <article class="category-tile">
           <a
-            class="category-tile-link"
+            class="category-tile-link category-link"
             href="category.html?category=all"
           >
             <div class="category-thumbnail-wrapper">
@@ -341,6 +418,13 @@
       </div>
     </section>
   </main>
+
+  <footer>
+    <div class="container text-center">
+      Το «Εύκολα Νέα» είναι δοκιμαστικό project για απλή και ήρεμη ενημέρωση. Μάθε περισσότερα στο
+      <a href="https://github.com/Stratooss" target="_blank" rel="noopener noreferrer">GitHub</a>.
+    </div>
+  </footer>
 
   <!-- Widget καιρού -->
   <script src="weather-widget.js"></script>
