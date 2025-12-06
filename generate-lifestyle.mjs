@@ -13,10 +13,8 @@ import {
 // Κατηγορίες που θα αντιμετωπίζονται ως lifestyle
 const LIFESTYLE_CATEGORIES = [
   "sports",
-  "movies",
-  "music",
-  "theatre",
-  "series",
+  "screen",
+  "culture",
   "fun",
 ];
 
@@ -46,14 +44,10 @@ function lifestyleTitleForCategory(category) {
   switch (category) {
     case "sports":
       return "Τα αθλητικά της ημέρας με απλά λόγια";
-    case "movies":
-      return "Ταινίες και σινεμά σε απλά λόγια";
-    case "music":
-      return "Μουσική και συναυλίες σε απλά λόγια";
-    case "theatre":
-      return "Θέατρο και παραστάσεις σε απλά λόγια";
-    case "series":
-      return "Σειρές και τηλεόραση με απλά λόγια";
+    case "screen":
+      return "Τηλεόραση και σινεμά σε απλά λόγια";
+    case "culture":
+      return "Πολιτισμός, θέατρο και μουσική σε απλά λόγια";
     case "fun":
       return "Ιδέες για βόλτες και διασκέδαση";
     default:

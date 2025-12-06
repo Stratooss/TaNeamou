@@ -64,9 +64,48 @@ function getWebSearchDateContext(baseDate = new Date()) {
   };
 }
 
+function normalizeTitle(title) {
+  return (title || "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .replace(/[«»"“”']/g, "")
+    .trim();
+}
+
+function dedupeArticlesByUrlOrTitle(articles) {
+  const seenUrls = new Set();
+  const seenTitles = new Set();
+
+  const result = [];
+
+  for (const art of articles) {
+    const url = (art.url || art.link || art.sourceUrl || "").trim();
+    const normTitle = normalizeTitle(art.title || "");
+
+    const urlKey = url.toLowerCase();
+    const titleKey = normTitle;
+
+    const isDuplicateByUrl = urlKey && seenUrls.has(urlKey);
+    const isDuplicateByTitle = titleKey && seenTitles.has(titleKey);
+
+    if (isDuplicateByUrl || isDuplicateByTitle) {
+      continue;
+    }
+
+    if (urlKey) seenUrls.add(urlKey);
+    if (titleKey) seenTitles.add(titleKey);
+
+    result.push(art);
+  }
+
+  return result;
+}
+
 export {
   cleanSimplifiedText,
   extractSourceDomains,
   buildSourcesFooter,
   getWebSearchDateContext,
+  normalizeTitle,
+  dedupeArticlesByUrlOrTitle,
 };

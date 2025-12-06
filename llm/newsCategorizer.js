@@ -3,6 +3,9 @@ import { NEWS_CATEGORY_SYSTEM_PROMPT } from "./newsPrompts.js";
 import { CATEGORY_KEYS } from "./newsCategories.js";
 
 const CATEGORY_SET = new Set(CATEGORY_KEYS);
+const FALLBACK_CATEGORY = CATEGORY_KEYS.includes("fun")
+  ? "fun"
+  : CATEGORY_KEYS[0];
 
 function extractText(response) {
   if (typeof response.output_text === "string") {
@@ -60,7 +63,7 @@ async function classifyNewsArticle({ title, simpleText, rawText }) {
     // fall through to fallback
   }
 
-  return { category: "other", reason: "JSON parse fallback" };
+  return { category: FALLBACK_CATEGORY, reason: "JSON parse fallback" };
 }
 
 export { classifyNewsArticle };

@@ -28,8 +28,8 @@ async function simplifyNewsArticle({ title, rawText, sourceUrl }) {
     input: userContent,
   });
 
-  const rawText = extractText(response).trim();
-  return cleanSimplifiedText(rawText);
+  const responseText = extractText(response).trim();
+  return cleanSimplifiedText(responseText);
 }
 
 export { simplifyNewsArticle };
