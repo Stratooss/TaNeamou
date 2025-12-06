@@ -49,6 +49,9 @@
       margin-bottom: 1.6rem;
       border-bottom: 1px solid var(--card-border);
       box-shadow: 0 10px 20px rgba(0, 0, 0, 0.28);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
     }
 
     .site-title {
@@ -56,13 +59,11 @@
       font-weight: 800;
       letter-spacing: 0.3px;
     }
-
     .site-subtitle {
       font-size: 1rem;
       color: var(--text-muted);
       margin-top: 0.25rem;
     }
-
     .section-title {
       color: var(--text-main);
     }
@@ -213,7 +214,7 @@
     <div class="container">
       <div class="d-flex flex-column align-items-start gap-1">
         <div class="d-flex align-items-center gap-2 flex-wrap">
-          <div class="site-title">📰 Εύκολα Νέα</div>
+          <div id="site-title" class="site-title">📰 Εύκολα Νέα</div>
         </div>
         <div class="site-subtitle">Απλή ενημέρωση για όλους</div>
       </div>
@@ -419,7 +420,18 @@
   <!-- Widget καιρού -->
   <script src="weather-widget.js"></script>
   <script>
+    function setupSiteTitleReload() {
+      const titleEl = document.querySelector(".site-title");
+      if (!titleEl) return;
+
+      titleEl.addEventListener("click", (event) => {
+        event.preventDefault();
+        window.location.reload();
+      });
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
+      setupSiteTitleReload();
       if (window.initWeatherWidget) {
         window.initWeatherWidget();
       }

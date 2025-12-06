@@ -44,24 +44,25 @@
       .site-header {
         background: #0b1224;
         color: var(--text-main);
-        padding: 1.4rem 0;
-        margin-bottom: 1.4rem;
+        padding: 1.6rem 0;
+        margin-bottom: 1.6rem;
         border-bottom: 1px solid var(--card-border);
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.28);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
       }
 
       .site-title {
-        font-size: 1.8rem;
+        font-size: 2rem;
         font-weight: 800;
         letter-spacing: 0.3px;
       }
-
       .site-subtitle {
         font-size: 1rem;
         color: var(--text-muted);
         margin-top: 0.25rem;
       }
-
       .back-link {
         font-size: 1rem;
         margin-bottom: 1.1rem;
@@ -72,15 +73,17 @@
       }
 
       /* ===== Κλασικές κάρτες άρθρων (λίστα από news.json) ===== */
-      .article-card {
+            .article-card {
         border-radius: 1rem;
         border: 1px solid var(--card-border);
         padding: 1rem 1.1rem;
         margin-bottom: 1rem;
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.28);
         background: var(--card-bg);
-        transition: border-color 0.14s.ease, transform 0.14s ease;
-      }
+        transition: border-color 0.14s ease, transform 0.14s ease;
+        position: relative;
+        cursor: pointer;
+            }
 
       .article-card:hover {
         border-color: rgba(96, 165, 250, 0.7);
@@ -198,15 +201,15 @@
     <header class="site-header">
       <div class="container">
         <div class="d-flex flex-column align-items-start gap-1">
-          <div class="d-flex.align-items-center gap-2 flex-wrap">
-            <div class="site-title">📰 Εύκολα Νέα</div>
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <div id="site-title" class="site-title">📰 Εύκολα Νέα</div>
           </div>
           <div class="site-subtitle">Απλή ενημέρωση για όλους</div>
         </div>
       </div>
     </header>
 
-    <main class="container.mb-5">
+    <main class="container mb-5">
       <a href="index.html" class="back-link">← Πίσω στο μενού κατηγοριών</a>
       <h1 id="page-title" class="h4 mb-3">Ειδήσεις</h1>
 
@@ -270,8 +273,21 @@
           const card = document.createElement("article");
           card.className = "article-card";
 
+          const href = article.id
+            ? "article.html?id=" + encodeURIComponent(article.id) +
+              "&category=" + encodeURIComponent(category)
+            : null;
+
           const titleEl = document.createElement("h2");
-          titleEl.textContent = article.simpleTitle || article.title || "Χωρίς τίτλο";
+          if (href) {
+            const titleLink = document.createElement("a");
+            titleLink.href = href;
+            titleLink.className = "text-decoration-none text-reset";
+            titleLink.textContent = article.simpleTitle || article.title || "Χωρίς τίτλο";
+            titleEl.appendChild(titleLink);
+          } else {
+            titleEl.textContent = article.simpleTitle || article.title || "Χωρίς τίτλο";
+          }
 
           const metaEl = document.createElement("div");
           metaEl.className = "meta";
@@ -292,11 +308,19 @@
             linkEl.href = article.sourceUrl;
             linkEl.target = "_blank";
             linkEl.rel = "noopener noreferrer";
+            linkEl.dataset.externalSource = "true";
             linkEl.textContent = "Δες την αρχική πηγή";
             linkEl.style.display = "block";
             linkEl.style.marginTop = "0.5rem";
             contentEl.appendChild(document.createElement("br"));
             contentEl.appendChild(linkEl);
+          }
+
+          if (href) {
+            card.addEventListener("click", (event) => {
+              if (event.target.closest("a")) return;
+              window.location.href = href;
+            });
           }
 
           card.appendChild(titleEl);
@@ -394,6 +418,16 @@
         }
       }
 
+      // ===== main init =====
+      function setupSiteTitleReload() {
+        const titleEl = document.querySelector(".site-title");
+        if (!titleEl) return;
+
+        titleEl.addEventListener("click", (event) => {
+          event.preventDefault();
+          window.location.reload();
+        });
+      }
       async function init() {
         try {
           if (category === "all") {
@@ -415,7 +449,10 @@
         }
       }
 
-      init();
+      document.addEventListener("DOMContentLoaded", () => {
+        setupSiteTitleReload();
+        init();
+      });
     </script>
   </body>
 </html>
