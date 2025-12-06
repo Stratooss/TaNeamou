@@ -128,9 +128,9 @@
       box-shadow: 0 10px 20px rgba(0, 0, 0, 0.28);
       overflow: hidden;
       transition: transform 0.14s ease, border-color 0.14s ease, background-color 0.14s ease;
-      min-height: 210px;           /* πιο μεγάλη κάρτα */
+      min-height: 230px;
       width: 100%;
-      max-width: 340px;            /* φαρδιά, αλλά όχι υπερβολικά */
+      max-width: 340px;
     }
 
     .category-tile:hover {
@@ -145,32 +145,22 @@
       height: 100%;
       text-decoration: none;
       color: inherit;
-      padding: 1.2rem 1.3rem;      /* λίγο παραπάνω padding για να φαίνονται “γεμάτες” */
-      gap: 0.9rem;
-    }
-
-    .category-tile-link:focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 3px;
-      border-radius: 1rem;
+      padding: 0;               /* αφαιρούμε padding, θα μπει μέσα στα sections */
     }
 
     .category-thumbnail-wrapper {
-      width: 64px;
-      height: 64px;
-      border-radius: 14px;
-      background: #0f172a;
-      border: 1px solid var(--card-border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 100%;
+      height: 170px;            /* ΜΕΓΑΛΗ εικόνα στην κορυφή */
+      border-radius: 0.9rem 0.9rem 0 0;
+      background: #020617;
+      border-bottom: 1px solid var(--card-border);
+      overflow: hidden;
     }
 
     .category-thumbnail {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      border-radius: 12px;
       display: block;
     }
 
@@ -178,6 +168,7 @@
       display: flex;
       flex-direction: column;
       gap: 0.35rem;
+      padding: 1rem 1.1rem 1.2rem;
     }
 
     .category-tile-title {
@@ -193,6 +184,12 @@
 
     .category-tile-emoji {
       font-size: 1.4rem;
+    }
+
+    .category-tile-link:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+      border-radius: 1rem;
     }
 
     /* Footer */
@@ -267,7 +264,7 @@
       <!-- 🔽 εδώ βάζεις τα free for commercial use thumbnails στο /images/categories/... -->
       <div class="category-grid">
 
-        <!-- 1. Σοβαρές ειδήσεις (μένει στη σελίδα κατηγορίας) -->
+        <!-- 1. Σοβαρές ειδήσεις -->
         <article class="category-tile">
           <a
             class="category-tile-link category-link"
@@ -290,7 +287,7 @@
           </a>
         </article>
 
-        <!-- 2. Χαρούμενες ειδήσεις (μένει στη σελίδα κατηγορίας) -->
+        <!-- 2. Χαρούμενες ειδήσεις -->
         <article class="category-tile">
           <a
             class="category-tile-link category-link"
@@ -313,7 +310,7 @@
           </a>
         </article>
 
-        <!-- 3. Αθλητισμός → lifestyle άρθρο κατευθείαν -->
+        <!-- 3. Αθλητισμός → lifestyle -->
         <article class="category-tile">
           <a
             class="category-tile-link category-link"
@@ -336,7 +333,7 @@
           </a>
         </article>
 
-        <!-- 4. Τηλεόραση και σινεμά → lifestyle άρθρο -->
+        <!-- 4. Τηλεόραση και σινεμά → lifestyle -->
         <article class="category-tile">
           <a
             class="category-tile-link category-link"
@@ -359,7 +356,7 @@
           </a>
         </article>
 
-        <!-- 5. Πολιτισμός → lifestyle άρθρο -->
+        <!-- 5. Πολιτισμός → lifestyle -->
         <article class="category-tile">
           <a
             class="category-tile-link category-link"
@@ -382,7 +379,7 @@
           </a>
         </article>
 
-        <!-- 6. Διασκέδαση → lifestyle άρθρο -->
+        <!-- 6. Διασκέδαση → lifestyle -->
         <article class="category-tile">
           <a
             class="category-tile-link category-link"
@@ -405,7 +402,7 @@
           </a>
         </article>
 
-        <!-- 7. Όλες οι ειδήσεις (μένει στη σελίδα κατηγορίας) -->
+        <!-- 7. Όλες οι ειδήσεις -->
         <article class="category-tile">
           <a
             class="category-tile-link category-link"
