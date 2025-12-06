@@ -57,6 +57,12 @@
       letter-spacing: 0.3px;
     }
 
+    .site-subtitle {
+      font-size: 1rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
     .section-title {
       color: var(--text-main);
     }
@@ -127,18 +133,18 @@
       padding: 0;
     }
 
-    /* 🔵 ΕΔΩ: η κάρτα προσαρμόζεται στην εικόνα */
+    /* η κάρτα προσαρμόζεται στην εικόνα */
     .category-thumbnail-wrapper {
       width: 100%;
       border-radius: 0.9rem 0.9rem 0 0;
       overflow: hidden;
       border-bottom: 1px solid var(--card-border);
-      background: transparent; /* για να μην φαίνεται μαύρο γύρω από εικόνες με διάφανο */
+      background: transparent;
     }
 
     .category-thumbnail {
       width: 100%;
-      height: auto;     /* ΔΕΝ κόβει την εικόνα */
+      height: auto;
       display: block;
     }
 
@@ -209,6 +215,7 @@
         <div class="d-flex align-items-center gap-2 flex-wrap">
           <div class="site-title">📰 Εύκολα Νέα</div>
         </div>
+        <div class="site-subtitle">Απλή ενημέρωση για όλους</div>
       </div>
     </div>
   </header>
@@ -353,7 +360,7 @@
           </a>
         </article>
 
-        <!-- 6. Διασκέδαση → lifestyle -->
+        <!-- 6. Διασκέδαση → lifestyle (με fun2.jpg) -->
         <article class="category-tile">
           <a
             class="category-tile-link category-link"
@@ -361,7 +368,7 @@
           >
             <div class="category-thumbnail-wrapper">
               <img
-                src="images/categories/fun.jpg"
+                src="images/categories/fun2.jpg"
                 alt="Διασκέδαση"
                 class="category-thumbnail"
               />
@@ -420,4 +427,3 @@
   </script>
 </body>
 </html>
-
