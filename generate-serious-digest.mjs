@@ -5,6 +5,11 @@ import {
   SERIOUS_TOPICS_SYSTEM_PROMPT,
   SERIOUS_DIGEST_SYSTEM_PROMPT,
 } from "./llm/seriousDigestPrompts.js";
+import {
+  buildSourcesFooter,
+  cleanSimplifiedText,
+  extractSourceDomains,
+} from "./llm/textUtils.js";
 
 // Paths
 const NEWS_PATH = new URL("./news.json", import.meta.url);
@@ -53,6 +58,27 @@ function stripInlineLinksOutsideSourcesSection(text) {
   );
 
   return cleanedBody + "\nΠηγές:" + (afterSources ?? "");
+}
+
+function collectSourceUrls(article) {
+  if (!article) return [];
+  const urls = [];
+
+  if (article.sourceUrl) urls.push(article.sourceUrl);
+  if (article.url) urls.push(article.url);
+
+  if (Array.isArray(article.sources)) {
+    for (const s of article.sources) {
+      if (typeof s === "string") {
+        urls.push(/^https?:\/\//.test(s) ? s : `https://${s}`);
+        continue;
+      }
+      const u = s?.sourceUrl || s?.url;
+      if (u) urls.push(u);
+    }
+  }
+
+  return urls.filter(Boolean);
 }
 
 // Τίτλοι για τις 3 θεματικές
@@ -304,6 +330,35 @@ ${JSON.stringify(payload, null, 2)}
 
   let simpleText = extractTextFromResponse(response).trim();
   simpleText = stripInlineLinksOutsideSourcesSection(simpleText);
+  simpleText = cleanSimplifiedText(simpleText);
+
+  const sourceUrls = [];
+  if (hasMain) {
+    sourceUrls.push(...collectSourceUrls(mainArticle));
+  }
+  for (const rel of relatedArticles || []) {
+    sourceUrls.push(...collectSourceUrls(rel));
+  }
+
+  let sourceDomains = extractSourceDomains(sourceUrls);
+
+  if (!sourceDomains.length && !hasMain) {
+    sourceDomains = ["web.search"];
+  }
+
+  if (!sourceDomains.length && hasMain) {
+    const nameFallbacks = [];
+    if (mainArticle?.sourceName) nameFallbacks.push(mainArticle.sourceName);
+    for (const rel of relatedArticles || []) {
+      if (rel?.sourceName) nameFallbacks.push(rel.sourceName);
+    }
+    if (nameFallbacks.length) {
+      sourceDomains = [...new Set(nameFallbacks)];
+    }
+  }
+
+  const footer = buildSourcesFooter(sourceDomains);
+  simpleText = simpleText + footer;
 
   return {
     id: crypto.randomUUID(),
@@ -312,6 +367,7 @@ ${JSON.stringify(payload, null, 2)}
     topicLabel,
     title,
     simpleText,
+    sources: sourceDomains,
     mainArticleId: hasMain ? mainArticle.id : null,
     relatedArticleIds: (relatedArticles || []).map((a) => a.id),
     createdAt: new Date().toISOString(),

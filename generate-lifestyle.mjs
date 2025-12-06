@@ -2,6 +2,13 @@ import fs from "fs/promises";
 import crypto from "crypto";
 import { openai } from "./llm/openaiClient.js";
 import { LIFESTYLE_AGENT_SYSTEM_PROMPT } from "./llm/lifestyleAgentPrompts.js";
+import { WEB_SEARCH_NEWS_INSTRUCTIONS } from "./newsLlmInstructions.js";
+import {
+  buildSourcesFooter,
+  cleanSimplifiedText,
+  extractSourceDomains,
+  getWebSearchDateContext,
+} from "./llm/textUtils.js";
 
 // Κατηγορίες που θα αντιμετωπίζονται ως lifestyle
 const LIFESTYLE_CATEGORIES = [
@@ -54,23 +61,6 @@ function lifestyleTitleForCategory(category) {
   }
 }
 
-// Συγκέντρωση μοναδικών πηγών από τα items (μόνο από RSS δεδομένα)
-function uniqueSourcesFromItems(items) {
-  const seen = new Set();
-  const result = [];
-  for (const item of items) {
-    const url = item.sourceUrl || item.url;
-    if (!url || seen.has(url)) continue;
-    seen.add(url);
-    result.push({
-      url,
-      sourceName: item.sourceName || null,
-    });
-    if (result.length >= 8) break;
-  }
-  return result;
-}
-
 // Βαθμολογία: πόσα sites (sources.length) + πόσο πρόσφατο
 function scoreLifestyleArticle(article) {
   const sourcesCount = Array.isArray(article.sources)
@@ -117,6 +107,9 @@ async function generateLifestyleArticleForCategory(category, items) {
 
   let payload;
   let userContent;
+
+  const dateCtx = getWebSearchDateContext();
+  const categoryKey = category;
 
   if (items.length > 0) {
     // 👉 Τα items είναι ήδη ταξινομημένα με scoreLifestyleArticle
@@ -188,18 +181,19 @@ ${JSON.stringify(payload, null, 2)}
     userContent = `
 
 
-Κατηγορία (lifestyle): ${category}
-Ημερομηνία: ${today}
+Κατηγορία (lifestyle): ${categoryKey}
+Ημερομηνία αναφοράς: ${dateCtx.todayLabel}
+Χθες: ${dateCtx.yesterdayLabel}
+Αύριο: ${dateCtx.tomorrowLabel}
 
 Δεν βρέθηκαν καθόλου άρθρα για αυτή την κατηγορία στα δικά μας RSS feeds.
 
 Θέλω:
 
 Να χρησιμοποιήσεις ΜΟΝΟ web search (εργαλείο web_search_preview)
-για να βρεις ΕΝΑ σημαντικό γεγονός της ημέρας που ταιριάζει στην κατηγορία "${category}".
+για να βρεις ΕΝΑ σημαντικό γεγονός της ημέρας που ταιριάζει στην κατηγορία "${categoryKey}".
 
-Να γράψεις ΕΝΑ μικρό άρθρο για αυτό το γεγονός, σε πολύ απλά ελληνικά,
-σύμφωνα με τις οδηγίες του system prompt.
+Διάλεξε ένα συγκεκριμένο γεγονός κοντά χρονικά (χθες/σήμερα/αύριο) και γράψε ΕΝΑ μικρό άρθρο σε πολύ απλά ελληνικά, σύμφωνα με τις οδηγίες του system prompt.
 
 Να μην εφεύρεις γεγονότα. Στηρίξου σε αυτά που βρίσκεις στο web search.
 
@@ -212,14 +206,40 @@ ${JSON.stringify(payload, null, 2)}
 
   const response = await openai.responses.create({
     model: "gpt-4.1",
-    instructions: LIFESTYLE_AGENT_SYSTEM_PROMPT,
+    instructions:
+      items.length > 0 ? LIFESTYLE_AGENT_SYSTEM_PROMPT : WEB_SEARCH_NEWS_INSTRUCTIONS,
     tools: [{ type: "web_search_preview" }],
     input: userContent,
     max_output_tokens: 1600,
   });
 
-  const simpleText = extractTextFromResponse(response).trim();
-  const sources = items.length > 0 ? uniqueSourcesFromItems(items) : [];
+  const rawText = extractTextFromResponse(response).trim();
+  const cleaned = cleanSimplifiedText(rawText);
+
+  const sourceUrls = items.length
+    ? items
+        .map((item) => item.sourceUrl || item.url)
+        .filter(Boolean)
+    : [];
+
+  let sourceDomains = extractSourceDomains(sourceUrls);
+
+  if (!sourceDomains.length && items.length === 0) {
+    // καθαρό web search fallback
+    sourceDomains = ["web.search"];
+  }
+
+  if (!sourceDomains.length) {
+    const nameFallbacks = items
+      .map((i) => i.sourceName)
+      .filter(Boolean);
+    if (nameFallbacks.length) {
+      sourceDomains = [...new Set(nameFallbacks)];
+    }
+  }
+
+  const footer = buildSourcesFooter(sourceDomains);
+  const simpleText = cleaned + footer;
 
   const article = {
     id: crypto.randomUUID(),
@@ -228,8 +248,7 @@ ${JSON.stringify(payload, null, 2)}
     date: today,
     title: lifestyleTitleForCategory(category),
     simpleText,
-    // Πηγές από τα RSS items που χρησιμοποιήσαμε ως βάση
-    sources,
+    sources: sourceDomains,
     createdAt: new Date().toISOString(),
   };
 

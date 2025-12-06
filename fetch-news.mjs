@@ -4,6 +4,11 @@ import crypto from "crypto";
 import { CATEGORY_KEYS } from "./llm/newsCategories.js";
 import { simplifyNewsArticle } from "./llm/newsSimplifier.js";
 import { classifyNewsArticle } from "./llm/newsCategorizer.js";
+import {
+  buildSourcesFooter,
+  cleanSimplifiedText,
+  extractSourceDomains,
+} from "./llm/textUtils.js";
 
 export { CATEGORY_KEYS };
 
@@ -636,18 +641,38 @@ async function run() {
       mainSourceUrl = sources[0].sourceUrl || primary.sourceUrl || "";
     }
 
+    const sourceUrls = sources.map((s) => s.sourceUrl).filter(Boolean);
+    let sourceDomains = extractSourceDomains(sourceUrls);
+
+    if (!sourceDomains.length && primary.sourceUrl) {
+      sourceDomains = extractSourceDomains([primary.sourceUrl]);
+    }
+
+    if (!sourceDomains.length) {
+      const nameFallbacks = sources
+        .map((s) => s.sourceName)
+        .filter(Boolean);
+      if (nameFallbacks.length) {
+        sourceDomains = [...new Set(nameFallbacks)];
+      }
+    }
+
+    const footer = buildSourcesFooter(sourceDomains);
+    const cleanedText = cleanSimplifiedText(result.simplifiedText || "");
+    const simpleText = cleanedText + footer;
+
     allArticles.push({
       id: topic.id,
       title: topic.title, // αρχικός τίτλος (από το πρώτο άρθρο του θέματος)
       simpleTitle: result.simplifiedTitle || topic.title,
-      simpleText: result.simplifiedText,
+      simpleText,
 
       // "συνοπτική" πηγή για παλιό UI
       sourceName: mainSourceName,
       sourceUrl: mainSourceUrl,
 
-      // 🆕 Πλήρης λίστα με όλες τις πηγές που χρησιμοποιήθηκαν για τη σύνθεση
-      sources,
+      // 🆕 Πλήρης λίστα με domains των πηγών που χρησιμοποιήθηκαν για τη σύνθεση
+      sources: sourceDomains,
 
       category: categoryKey, // ✅ μία από τις CATEGORY_KEYS
       categoryReason: result.categoryReason || "",

@@ -356,8 +356,12 @@
 
       if (sources.length) {
         for (const s of sources) {
-          const name = s.sourceName || s.source || s.url || "Πηγή";
-          const url = s.sourceUrl || s.url || null;
+          if (typeof s === "string") {
+            items.push({ name: s, url: null });
+            continue;
+          }
+          const name = s?.sourceName || s?.source || s?.url || "Πηγή";
+          const url = s?.sourceUrl || s?.url || null;
           items.push({ name, url });
         }
       } else if (fallbackUrl && fallbackUrl !== "#") {
@@ -558,8 +562,13 @@
         titleEl.textContent = displayTitle;
         bodyEl.innerHTML = cleaned.replace(/\n/g, "<br/>");
 
-        // προσπαθούμε να βρούμε πηγές από το news.json (mainArticleId)
-        if (article.mainArticleId) {
+        const digestHasSources = Array.isArray(article.sources)
+          ? article.sources.length > 0
+          : false;
+
+        if (digestHasSources) {
+          renderSourcesBlock(sourceEl, article, null);
+        } else if (article.mainArticleId) {
           try {
             const newsRes = await fetch("news.json?cachebust=" + Date.now());
             if (newsRes.ok) {

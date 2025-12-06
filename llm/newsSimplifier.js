@@ -1,5 +1,6 @@
 import { openai } from "./openaiClient.js";
-import { NEWS_SIMPLIFY_SYSTEM_PROMPT } from "./newsPrompts.js";
+import { NEWS_SIMPLIFY_INSTRUCTIONS } from "./newsPrompts.js";
+import { cleanSimplifiedText } from "./textUtils.js";
 
 function extractText(response) {
   if (typeof response.output_text === "string") {
@@ -23,11 +24,12 @@ async function simplifyNewsArticle({ title, rawText, sourceUrl }) {
 
   const response = await openai.responses.create({
     model: "gpt-4.1",
-    instructions: NEWS_SIMPLIFY_SYSTEM_PROMPT,
+    instructions: NEWS_SIMPLIFY_INSTRUCTIONS,
     input: userContent,
   });
 
-  return extractText(response).trim();
+  const rawText = extractText(response).trim();
+  return cleanSimplifiedText(rawText);
 }
 
 export { simplifyNewsArticle };
