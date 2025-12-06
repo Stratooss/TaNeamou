@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8" />
-  <title>Άρθρο - Εύκολες Ειδήσεις</title>
+  <title>Άρθρο - Εύκολα Νέα</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <link
@@ -15,10 +15,9 @@
   <style>
     :root {
       --bg: #020617;
-      --card-bg: #0b1224;
-      --card-border: rgba(148, 163, 184, 0.35);
-      --accent: #38bdf8;
-      --accent-soft: rgba(56, 189, 248, 0.18);
+      --card-bg: #111827;
+      --card-border: rgba(148, 163, 184, 0.3);
+      --accent: #60a5fa;
       --text-main: #e5e7eb;
       --text-muted: #9ca3af;
     }
@@ -39,7 +38,7 @@
     }
 
     a:hover {
-      color: #7dd3fc;
+      color: #93c5fd;
     }
 
     /* φλου full-screen backround για σοβαρές & lifestyle ειδήσεις */
@@ -55,19 +54,18 @@
     }
 
     .site-header {
-      background: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.12), transparent 40%),
-        linear-gradient(145deg, #0f172a, #020617 60%);
+      background: #0b1224;
       color: var(--text-main);
       padding: 1.2rem 0;
       margin-bottom: 1.4rem;
       border-bottom: 1px solid var(--card-border);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.28);
     }
 
     .site-title {
       font-size: 1.8rem;
       font-weight: 800;
-      letter-spacing: 0.35px;
+      letter-spacing: 0.3px;
     }
 
     .site-badge {
@@ -77,7 +75,7 @@
       padding: 0.28rem 0.7rem;
       border-radius: 999px;
       border: 1px solid var(--accent);
-      background: var(--accent-soft);
+      background: rgba(96, 165, 250, 0.1);
       color: var(--text-main);
       font-size: 0.93rem;
       font-weight: 600;
@@ -97,7 +95,7 @@
 
     .back-link:hover {
       border-color: var(--accent);
-      background: var(--accent-soft);
+      background: rgba(96, 165, 250, 0.1);
       color: var(--text-main);
     }
 
@@ -108,9 +106,8 @@
 
     .article-main-card {
       border-radius: 20px;
-      background: radial-gradient(circle at 70% 10%, var(--accent-soft), transparent 55%),
-        var(--card-bg);
-      box-shadow: 0 24px 38px rgba(0, 0, 0, 0.55);
+      background: var(--card-bg);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
       padding: 1.4rem 1.5rem;
       border: 1px solid var(--card-border);
     }
@@ -121,7 +118,7 @@
       margin-bottom: 1rem;
       color: var(--text-main);
       text-align: center;
-      letter-spacing: 0.1px;
+      letter-spacing: 0.05px;
     }
 
     .article-image-wrapper {
@@ -152,7 +149,7 @@
       border: none;
       background-color: #000;
       display: block;
-      box-shadow: 0 18px 30px rgba(0, 0, 0, 0.45);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.32);
     }
 
     .article-body {
@@ -173,14 +170,14 @@
       font-weight: 700;
       background: var(--accent);
       border: 1px solid var(--accent);
-      color: #04101b;
-      box-shadow: 0 12px 24px rgba(56, 189, 248, 0.2);
+      color: #0b1224;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
     }
 
     .btn-listen:hover {
-      background: #7dd3fc;
-      border-color: #7dd3fc;
-      color: #04101b;
+      background: #93c5fd;
+      border-color: #93c5fd;
+      color: #0b1224;
     }
 
     /* 🔎 Πηγές στο τέλος, με "εικονίδιο" */
@@ -221,7 +218,7 @@
   <header class="site-header">
     <div class="container page-wrapper d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2">
       <div class="d-flex align-items-center gap-2 flex-wrap">
-        <div class="site-title">📰 Εύκολες Ειδήσεις</div>
+        <div class="site-title">📰 Εύκολα Νέα</div>
         <span class="site-badge">Ειδήσεις σε απλά ελληνικά</span>
       </div>
       <a href="index.html" class="back-link">← Πίσω στις ειδήσεις</a>
@@ -569,7 +566,7 @@
         // 🔚 Πηγές στο τέλος
         renderSourcesBlock(sourceEl, article, null);
 
-        document.title = displayTitle + " - Εύκολες Ειδήσεις";
+        document.title = displayTitle + " - Εύκολα Νέα";
 
         // 🎧 setup play / pause / resume
         setupTtsButton(listenBtn, displayTitle, cleaned);
@@ -683,7 +680,7 @@
           );
         }
 
-        document.title = displayTitle + " - Εύκολες Ειδήσεις";
+        document.title = displayTitle + " - Εύκολα Νέα";
 
         // 🎧 setup play / pause / resume
         setupTtsButton(listenBtn, displayTitle, cleaned);
@@ -755,7 +752,7 @@
         // Πηγές στο τέλος (από το lifestyle.json)
         renderSourcesBlock(sourceEl, article, null);
 
-        document.title = displayTitle + " - Εύκολες Ειδήσεις";
+        document.title = displayTitle + " - Εύκολα Νέα";
 
         // 🎧 setup play / pause / resume
         setupTtsButton(listenBtn, displayTitle, cleaned);
