@@ -1,14 +1,14 @@
 import fs from "fs/promises";
 import crypto from "crypto";
-import { openai } from "./llm/openaiClient.js";
-import { LIFESTYLE_AGENT_SYSTEM_PROMPT } from "./llm/lifestyleAgentPrompts.js";
-import { WEB_SEARCH_NEWS_INSTRUCTIONS } from "./newsLlmInstructions.js";
+import { openai } from "../llm/openaiClient.js";
+import { LIFESTYLE_AGENT_SYSTEM_PROMPT } from "../llm/lifestyleAgentPrompts.js";
+import { WEB_SEARCH_NEWS_INSTRUCTIONS } from "../newsLlmInstructions.js";
 import {
   buildSourcesFooter,
   cleanSimplifiedText,
   extractSourceDomains,
   getWebSearchDateContext,
-} from "./llm/textUtils.js";
+} from "../llm/textUtils.js";
 
 // Κατηγορίες που θα αντιμετωπίζονται ως lifestyle
 const LIFESTYLE_CATEGORIES = [
@@ -22,8 +22,8 @@ const LIFESTYLE_CATEGORIES = [
 const MAX_ITEMS_PER_CATEGORY = 10;
 
 // Paths – προσαρμόσ’ τα αν χρειάζεται
-const NEWS_PATH = new URL("./news.json", import.meta.url);
-const LIFESTYLE_PATH = new URL("./lifestyle.json", import.meta.url);
+const NEWS_PATH = new URL("./../news.json", import.meta.url);
+const LIFESTYLE_PATH = new URL("./../lifestyle.json", import.meta.url);
 
 // Helper: βγάζουμε text από το Responses API
 function extractTextFromResponse(response) {

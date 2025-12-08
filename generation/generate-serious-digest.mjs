@@ -1,19 +1,19 @@
 import fs from "fs/promises";
 import crypto from "crypto";
-import { openai } from "./llm/openaiClient.js";
+import { openai } from "../llm/openaiClient.js";
 import {
   SERIOUS_TOPICS_SYSTEM_PROMPT,
   SERIOUS_DIGEST_SYSTEM_PROMPT,
-} from "./llm/seriousDigestPrompts.js";
+} from "../llm/seriousDigestPrompts.js";
 import {
   buildSourcesFooter,
   cleanSimplifiedText,
   extractSourceDomains,
-} from "./llm/textUtils.js";
+} from "../llm/textUtils.js";
 
 // Paths
-const NEWS_PATH = new URL("./news.json", import.meta.url);
-const SERIOUS_DIGEST_PATH = new URL("./serious-digest.json", import.meta.url);
+const NEWS_PATH = new URL("./.../news.json", import.meta.url);
+const SERIOUS_DIGEST_PATH = new URL("./.../serious-digest.json", import.meta.url);
 
 // Θεματικές για τις σοβαρές ειδήσεις
 const SERIOUS_TOPICS = ["politics_economy", "social", "world"];

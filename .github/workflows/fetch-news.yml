@@ -27,17 +27,17 @@ jobs:
       - name: Run fetch script (news.json)
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: node fetch-news.mjs
+        run: node generation/fetch-news.mjs
 
       - name: Generate serious digest (serious-digest.json)
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: node generate-serious-digest.mjs
+        run: node generation/generate-serious-digest.mjs
 
       - name: Generate lifestyle articles (lifestyle.json)
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: node generate-lifestyle.mjs   # <- πρόσεξε το όνομα εδώ
+        run: node generation/generate-lifestyle.mjs   # <- πρόσεξε το όνομα εδώ
 
       - name: Commit and push JSON files
         run: |

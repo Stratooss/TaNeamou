@@ -1,18 +1,18 @@
 import fs from "fs/promises";
 import Parser from "rss-parser";
 import crypto from "crypto";
-import { CATEGORY_KEYS } from "./llm/newsCategories.js";
-import { simplifyNewsArticle } from "./llm/newsSimplifier.js";
-import { classifyNewsArticle } from "./llm/newsCategorizer.js";
-import { openai } from "./llm/openaiClient.js";
-import { WEB_SEARCH_NEWS_INSTRUCTIONS } from "./newsLlmInstructions.js";
+import { CATEGORY_KEYS } from "../llm/newsCategories.js";
+import { simplifyNewsArticle } from "../llm/newsSimplifier.js";
+import { classifyNewsArticle } from "../llm/newsCategorizer.js";
+import { openai } from "../llm/openaiClient.js";
+import { WEB_SEARCH_NEWS_INSTRUCTIONS } from "../newsLlmInstructions.js";
 import {
   buildSourcesFooter,
   cleanSimplifiedText,
   extractSourceDomains,
   getWebSearchDateContext,
   dedupeArticlesByUrlOrTitle,
-} from "./llm/textUtils.js";
+} from "../llm/textUtils.js";
 
 export { CATEGORY_KEYS };
 
@@ -22,7 +22,7 @@ const MIN_ARTICLES_PER_CATEGORY = 2;
 const MAX_ARTICLES_PER_CATEGORY = 6;
 
 // 👉 Θα γράφουμε το news.json δίπλα στο αρχείο αυτό
-const NEWS_JSON_PATH = new URL("./news.json", import.meta.url);
+const NEWS_JSON_PATH = new URL("./../news.json", import.meta.url);
 
 // RSS feeds που θα διαβάζουμε
 // ⚠️ Πολλά από τα παρακάτω sites περιορίζουν τη χρήση (συχνά «μόνο για προσωπική χρήση»).
