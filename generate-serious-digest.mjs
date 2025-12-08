@@ -22,7 +22,7 @@ const SERIOUS_TOPIC_LABELS = {
   world: "παγκόσμια επικαιρότητα",
 };
 
-// Πόσα θέματα (max) θα δίνουμε ως context σε κάθε θεματική
+// Πόσα θέματα (max) θα εξετάζουμε ανά θεματική πριν διαλέξουμε το καλύτερο mainArticle
 const MAX_ITEMS_PER_TOPIC = 6;
 
 // ---------- Helpers ----------
@@ -90,7 +90,7 @@ function digestTitleForTopic(topic) {
   }
 }
 
-// Μικρό score: πρώτα πόσα sites (sources.length), μετά πόσο πρόσφατο
+// Score: πρώτα πόσα sites (sources.length), μετά πόσο πρόσφατο
 function scoreSeriousArticle(article) {
   const sourcesCount = Array.isArray(article.sources)
     ? article.sources.length
@@ -98,7 +98,7 @@ function scoreSeriousArticle(article) {
   const timeMs = article.publishedAt
     ? new Date(article.publishedAt).getTime()
     : 0;
-  // δίνουμε πολύ μεγαλύτερο βάρος στα sites
+  // δίνουμε πολύ μεγαλύτερο βάρος στα πολλά sites
   return sourcesCount * 1_000_000_000_000 + timeMs;
 }
 
@@ -230,11 +230,7 @@ ${JSON.stringify(items, null, 2)}
 
 // ---------- Δημιουργία άρθρου serious digest για μία θεματική ----------
 
-async function generateSeriousDigestForTopic(
-  topicKey,
-  mainArticle,
-  relatedArticles
-) {
+async function generateSeriousDigestForTopic(topicKey, mainArticle) {
   const topicLabel = SERIOUS_TOPIC_LABELS[topicKey] || "σοβαρές ειδήσεις";
   const title = digestTitleForTopic(topicKey);
   const today = new Date().toISOString().slice(0, 10);
@@ -254,63 +250,31 @@ async function generateSeriousDigestForTopic(
           publishedAt: mainArticle.publishedAt || null,
         }
       : null,
-    relatedArticles: (relatedArticles || []).map((a) => ({
-      id: a.id,
-      title: a.simpleTitle || a.title,
-      summary: a.simpleText || "",
-      sourceName: a.sourceName || null,
-      sourceUrl: a.sourceUrl || null,
-      publishedAt: a.publishedAt || null,
-    })),
   };
 
   let userContent;
 
   if (hasMain) {
-    if (topicKey === "social") {
-      // 🔹 Ειδικό prompt για κοινωνικά θέματα: ΜΟΝΟ ένα γεγονός
-      userContent = `
+    // 🔹 ΕΝΑ γεγονός για κάθε θεματική (πολιτική-οικονομία, κοινωνικά, κόσμος)
+    userContent = `
 
 Θέμα serious digest: ${topicLabel} (${topicKey})
 Ημερομηνία: ${today}
 
-Παρακάτω είναι τα δεδομένα σε JSON για ΜΙΑ κοινωνική είδηση ("mainArticle").
+Παρακάτω είναι τα δεδομένα σε JSON για ΜΙΑ σοβαρή είδηση ("mainArticle")
+που ανήκει στην ενότητα "${topicLabel}".
 
 Θέλω:
 
-- Να γράψεις ΕΝΑ σύντομο άρθρο που να εξηγεί ΜΟΝΟ αυτή την κοινωνική είδηση με απλά λόγια.
-- Να ΜΗΝ προσθέτεις άλλα, άσχετα κοινωνικά γεγονότα (ούτε από άλλη πόλη, ούτε από άλλη χώρα).
-- Να ΜΗΝ κάνεις γενική σύνοψη πολλών κοινωνικών θεμάτων της ημέρας.
+- Να γράψεις ΕΝΑ σύντομο άρθρο που να εξηγεί ΜΟΝΟ αυτή την είδηση με απλά λόγια.
+- Να ΜΗΝ προσθέτεις άλλα, άσχετα γεγονότα (ούτε από άλλη πόλη, ούτε από άλλη χώρα).
+- Να ΜΗΝ κάνεις γενική σύνοψη πολλών θεμάτων της ημέρας.
 - Όλο το κείμενο να αφορά μόνο το "mainArticle".
 - Να ΜΗΝ γράφεις πηγές, links ή ονόματα ιστοσελίδων μέσα στο κείμενο.
 
 Δεδομένα (JSON):
 ${JSON.stringify(payload, null, 2)}
 `;
-    } else {
-      // 🔹 Για politics_economy & world συνεχίζουμε με main + related
-      userContent = `
-
-Θέμα serious digest: ${topicLabel} (${topicKey})
-Ημερομηνία: ${today}
-
-Παρακάτω είναι τα δεδομένα σε JSON για μια ομάδα σοβαρών ειδήσεων που αφορούν την ενότητα "${topicLabel}".
-
-Το "mainArticle" είναι το βασικό γεγονός.
-
-Τα "relatedArticles" είναι επιπλέον άρθρα για το ίδιο ή πολύ κοντινό θέμα.
-
-Θέλω:
-
-- Να γράψεις ΕΝΑ σύντομο άρθρο που να εξηγεί την είδηση με απλά λόγια.
-- Να συνδυάσεις πληροφορίες από όλα τα άρθρα, αλλά να τα παρουσιάσεις σαν ΜΙΑ ενιαία ιστορία.
-- Αν χρειάζεται, μπορείς να χρησιμοποιήσεις web search για να συμπληρώσεις μικρές λεπτομέρειες ή νεότερα στοιχεία για το ΙΔΙΟ γεγονός.
-- Να ΜΗΝ γράφεις πηγές, links ή ονόματα ιστοσελίδων μέσα στο κείμενο.
-
-Δεδομένα (JSON):
-${JSON.stringify(payload, null, 2)}
-`;
-    }
   } else {
     userContent = `
 
@@ -322,9 +286,10 @@ ${JSON.stringify(payload, null, 2)}
 Θέλω:
 
 - Να χρησιμοποιήσεις ΜΟΝΟ web search (εργαλείο web_search_preview)
-  για να βρεις ένα σημαντικό γεγονός της ημέρας που ανήκει στην ενότητα "${topicLabel}".
+  για να βρεις ΕΝΑ σημαντικό γεγονός της ημέρας που ανήκει στην ενότητα "${topicLabel}".
 - Να γράψεις ΕΝΑ άρθρο σε απλά ελληνικά, σαν ενημέρωση για ενήλικες με ήπιες νοητικές δυσκολίες.
 - Να ΜΗΝ εφευρίσκεις γεγονότα.
+- Να ΜΗΝ κάνεις γενική σύνοψη πολλών θεμάτων (γράψε για ΕΝΑ βασικό γεγονός).
 - Να ΜΗΝ γράφεις πηγές, links ή ονόματα ιστοσελίδων μέσα στο κείμενο.
 
 Για αναφορά, τα metadata σε JSON (δεν περιέχουν άρθρα):
@@ -350,9 +315,6 @@ ${JSON.stringify(payload, null, 2)}
   if (hasMain) {
     sourceUrls.push(...collectSourceUrls(mainArticle));
   }
-  for (const rel of relatedArticles || []) {
-    sourceUrls.push(...collectSourceUrls(rel));
-  }
 
   let sourceDomains = extractSourceDomains(sourceUrls);
 
@@ -363,9 +325,6 @@ ${JSON.stringify(payload, null, 2)}
   if (!sourceDomains.length && hasMain) {
     const nameFallbacks = [];
     if (mainArticle?.sourceName) nameFallbacks.push(mainArticle.sourceName);
-    for (const rel of relatedArticles || []) {
-      if (rel?.sourceName) nameFallbacks.push(rel.sourceName);
-    }
     if (nameFallbacks.length) {
       sourceDomains = [...new Set(nameFallbacks)];
     }
@@ -380,7 +339,7 @@ ${JSON.stringify(payload, null, 2)}
     simpleText,
     sources: sourceDomains,
     mainArticleId: hasMain ? mainArticle.id : null,
-    relatedArticleIds: (relatedArticles || []).map((a) => a.id),
+    relatedArticleIds: [], // δεν χρησιμοποιούμε πλέον related, ένα γεγονός ανά θεματική
     createdAt: new Date().toISOString(),
   };
 }
@@ -437,7 +396,7 @@ async function main() {
 
   const digestArticles = [];
 
-  // 4. Για κάθε θεματική, επιλέγουμε τα top N (με βάση score) ή fallback web search
+  // 4. Για κάθε θεματική, επιλέγουμε το καλύτερο mainArticle ή fallback web search
   for (const topic of SERIOUS_TOPICS) {
     const items = byTopic[topic] || [];
 
@@ -446,7 +405,7 @@ async function main() {
     );
 
     const contextItems = sortedItems.slice(0, MAX_ITEMS_PER_TOPIC);
-    const [mainArticle, ...restContext] = contextItems;
+    const [mainArticle] = contextItems;
 
     if (mainArticle) {
       console.log(
@@ -459,13 +418,9 @@ async function main() {
       );
     }
 
-    // 👉 ΜΟΝΟ στα social δεν στέλνουμε relatedArticles (ένα γεγονός)
-    const relatedForTopic = topic === "social" ? [] : restContext;
-
     const digest = await generateSeriousDigestForTopic(
       topic,
-      mainArticle || null,
-      mainArticle ? relatedForTopic : []
+      mainArticle || null
     );
 
     if (digest) {
