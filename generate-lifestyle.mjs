@@ -7,6 +7,7 @@ import {
   cleanSimplifiedText,
   extractSourceDomains,
   getWebSearchDateContext,
+  extractWebSearchSources,
 } from "./llm/textUtils.js";
 
 // Κατηγορίες που θα αντιμετωπίζονται ως lifestyle
@@ -216,13 +217,27 @@ ${JSON.stringify(payload, null, 2)}
   rawText = stripSourcesAndInlineLinks(rawText);
   const cleaned = cleanSimplifiedText(rawText);
 
-  const sourceUrls = items.length
-    ? items
-        .map((item) => item.sourceUrl || item.url)
-        .filter(Boolean)
-    : [];
+  const webSources = extractWebSearchSources(response);
+  const itemSources = items.map((item) => ({
+    title: item.sourceName || "Πηγή",
+    url: item.sourceUrl || item.url || "",
+  }));
 
-  let sourceDomains = extractSourceDomains(sourceUrls);
+  const mergedSources = [...itemSources, ...webSources];
+  const dedupedSources = [];
+  const seenSources = new Set();
+
+  for (const src of mergedSources) {
+    if (!src) continue;
+    const key = (src.url || src.title || "").toLowerCase();
+    if (key && seenSources.has(key)) continue;
+    if (key) seenSources.add(key);
+    dedupedSources.push(src);
+  }
+
+  let sourceDomains = extractSourceDomains(
+    dedupedSources.map((s) => s.url).filter(Boolean)
+  );
 
   if (!sourceDomains.length && items.length === 0) {
     // καθαρό web search fallback
@@ -247,7 +262,8 @@ ${JSON.stringify(payload, null, 2)}
     date: today,
     title: lifestyleTitleForCategory(category),
     simpleText,
-    sources: sourceDomains,
+    sourceDomains,
+    sources: dedupedSources,
     createdAt: new Date().toISOString(),
   };
 

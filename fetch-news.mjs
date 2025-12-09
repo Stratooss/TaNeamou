@@ -12,9 +12,61 @@ import {
   extractSourceDomains,
   getWebSearchDateContext,
   dedupeArticlesByUrlOrTitle,
+  extractWebSearchSources,
 } from "./llm/textUtils.js";
 
 export { CATEGORY_KEYS };
+
+// Generic Pixabay queries per category (fallback if feeds don't provide images)
+const CATEGORY_IMAGE_QUERIES = {
+  serious: "breaking news newspaper city",
+  sports: "sports football soccer stadium",
+  screen: "cinema movie theater screen",
+  culture: "concert stage music band",
+  fun: "friends fun night city",
+  happy: "happy people sunshine",
+  other: "news abstract background",
+};
+
+let hasWarnedMissingPixabayKey = false;
+
+async function fetchPixabayImageForCategory(categoryKey) {
+  const apiKey = process.env.PIXABAY_API_KEY;
+  if (!apiKey) {
+    if (!hasWarnedMissingPixabayKey) {
+      console.warn("⚠️ PIXABAY_API_KEY is not set. Skipping images.");
+      hasWarnedMissingPixabayKey = true;
+    }
+    return null;
+  }
+
+  const baseQuery = CATEGORY_IMAGE_QUERIES[categoryKey] || "news abstract background";
+
+  const url = new URL("https://pixabay.com/api/");
+  url.searchParams.set("key", apiKey);
+  url.searchParams.set("q", baseQuery);
+  url.searchParams.set("image_type", "photo");
+  url.searchParams.set("orientation", "horizontal");
+  url.searchParams.set("safesearch", "true");
+  url.searchParams.set("per_page", "5");
+
+  try {
+    const res = await fetch(url.toString());
+    if (!res.ok) {
+      console.warn("Pixabay API error", res.status, await res.text());
+      return null;
+    }
+
+    const data = await res.json();
+    const hit = data.hits?.[0];
+    if (!hit) return null;
+
+    return hit.webformatURL || hit.previewURL || null;
+  } catch (err) {
+    console.error("Pixabay fetch failed", err);
+    return null;
+  }
+}
 
 const TARGET_CATEGORIES = CATEGORY_KEYS.filter((key) => key !== "other");
 
@@ -358,7 +410,8 @@ ${queries.map((q) => `- ${q}`).join("\n")}
   const response = await openai.responses.create({
     model: "gpt-4.1",
     instructions: WEB_SEARCH_NEWS_INSTRUCTIONS,
-    tools: [{ type: "web_search_preview" }],
+    tools: [{ type: "web_search" }],
+    include: ["web_search_call.action.sources"],
     input: userContent,
     max_output_tokens: 1200,
   });
@@ -366,24 +419,35 @@ ${queries.map((q) => `- ${q}`).join("\n")}
   const rawText = extractTextFromResponse(response).trim();
   const cleaned = cleanSimplifiedText(rawText);
 
+  const webSources = extractWebSearchSources(response);
+  let sourceDomains = extractSourceDomains(
+    webSources.map((s) => s.url).filter(Boolean)
+  );
+
+  if (!sourceDomains.length) {
+    sourceDomains = ["web.search"];
+  }
+
   const firstLine =
     cleaned.split(/\n+/).find((line) => line.trim()) ||
     `Είδηση κατηγορίας ${categoryKey}`;
 
   const simpleTitle = firstLine.replace(/\*+/g, "").trim().slice(0, 160);
-
-  const sourceDomains = ["web.search"];
   const footer = buildSourcesFooter(sourceDomains);
   const simpleText = cleaned + footer;
+
+  const mainSourceName = webSources[0]?.title || "web.search";
+  const mainSourceUrl = webSources[0]?.url || "";
 
   return {
     id: crypto.randomUUID(),
     title: simpleTitle,
     simpleTitle,
     simpleText,
-    sourceName: "web.search",
-    sourceUrl: "",
-    sources: sourceDomains,
+    sourceName: mainSourceName,
+    sourceUrl: mainSourceUrl,
+    sources: webSources,
+    sourceDomains,
     category: categoryKey,
     categoryReason: "web_search_fallback",
     isSensitive: false,
@@ -826,7 +890,10 @@ async function run() {
         sourcesMap.set(key, { sourceName: name, sourceUrl: url });
       }
     }
-    const sources = Array.from(sourcesMap.values());
+    const sourceLinks = Array.from(sourcesMap.values()).map((s) => ({
+      title: s.sourceName || "Πηγή",
+      url: s.sourceUrl || "",
+    }));
 
     // Για συμβατότητα με το frontend:
     // - αν έχουμε μία πηγή → δείχνουμε αυτήν
@@ -834,18 +901,19 @@ async function run() {
     let mainSourceName = primary.sourceName || "Πηγή";
     let mainSourceUrl = primary.sourceUrl || "";
 
-    if (sources.length === 1) {
-      mainSourceName = sources[0].sourceName;
-      mainSourceUrl = sources[0].sourceUrl;
-    } else if (sources.length > 1) {
-      mainSourceName = sources
-        .map((s) => s.sourceName)
+    if (sourceLinks.length === 1) {
+      mainSourceName = sourceLinks[0].title;
+      mainSourceUrl = sourceLinks[0].url;
+    } else if (sourceLinks.length > 1) {
+      mainSourceName = sourceLinks
+        .map((s) => s.title)
         .filter(Boolean)
         .join(", ");
-      mainSourceUrl = sources[0].sourceUrl || primary.sourceUrl || "";
+      const firstUrl = sourceLinks.find((s) => s.url)?.url || "";
+      mainSourceUrl = firstUrl || primary.sourceUrl || "";
     }
 
-    const sourceUrls = sources.map((s) => s.sourceUrl).filter(Boolean);
+    const sourceUrls = sourceLinks.map((s) => s.url).filter(Boolean);
     let sourceDomains = extractSourceDomains(sourceUrls);
 
     if (!sourceDomains.length && primary.sourceUrl) {
@@ -853,9 +921,7 @@ async function run() {
     }
 
     if (!sourceDomains.length) {
-      const nameFallbacks = sources
-        .map((s) => s.sourceName)
-        .filter(Boolean);
+      const nameFallbacks = sourceLinks.map((s) => s.title).filter(Boolean);
       if (nameFallbacks.length) {
         sourceDomains = [...new Set(nameFallbacks)];
       }
@@ -874,9 +940,9 @@ async function run() {
       // "συνοπτική" πηγή για παλιό UI
       sourceName: mainSourceName,
       sourceUrl: mainSourceUrl,
-
-      // 🆕 Πλήρης λίστα με domains των πηγών που χρησιμοποιήθηκαν για τη σύνθεση
-      sources: sourceDomains,
+      sourceDomains,
+      // 🆕 Πλήρης λίστα με πηγές (τίτλος + URL) για το UI
+      sources: sourceLinks,
 
       category: categoryKey, // ✅ μία από τις CATEGORY_KEYS
       categoryReason: result.categoryReason || "",
@@ -903,13 +969,29 @@ async function run() {
   allArticles.length = 0;
   allArticles.push(...dedupedAfterBackfill);
 
+  const finalArticles = [];
+
+  for (const article of allArticles) {
+    const base = { ...article };
+
+    // TESTING FEATURE: generic Pixabay image per category
+    const pixabayImage = await fetchPixabayImageForCategory(article.category);
+    if (pixabayImage) {
+      base.imageUrl = pixabayImage;
+    } else if (!base.imageUrl) {
+      base.imageUrl = null;
+    }
+
+    finalArticles.push(base);
+  }
+
   // ✅ Φτιάχνουμε αντικείμενο με μέχρι MAX_ARTICLES_PER_CATEGORY άρθρα ανά κατηγορία
-  const articlesByCategory = buildArticlesByCategory(allArticles);
+  const articlesByCategory = buildArticlesByCategory(finalArticles);
 
   const payload = {
     generatedAt: new Date().toISOString(),
     // flat λίστα όλων των άρθρων (αν θες για ιστορικό)
-    articles: allArticles,
+    articles: finalArticles,
     // και οργανωμένα ανά κατηγορία για την αρχική οθόνη / "ειδήσεις της ημέρας"
     articlesByCategory,
   };
@@ -917,7 +999,7 @@ async function run() {
   await fs.writeFile(NEWS_JSON_PATH, JSON.stringify(payload, null, 2), "utf8");
   console.log(
     "Έγραψα news.json με",
-    allArticles.length,
+    finalArticles.length,
     "άρθρα συνολικά. Ανά κατηγορία:",
     Object.fromEntries(
       Object.entries(articlesByCategory).map(([k, v]) => [k, v.length])

@@ -101,6 +101,58 @@ function dedupeArticlesByUrlOrTitle(articles) {
   return result;
 }
 
+// Extract web search sources from a Responses API payload
+function extractWebSearchSources(response) {
+  const items = [];
+
+  if (Array.isArray(response?.output_items)) {
+    items.push(...response.output_items);
+  }
+
+  if (Array.isArray(response?.output)) {
+    for (const out of response.output) {
+      if (!out) continue;
+      if (out.type === "web_search_call") {
+        items.push(out);
+      }
+      if (Array.isArray(out.content)) {
+        items.push(...out.content);
+      }
+    }
+  }
+
+  const calls = items.filter((item) => item?.type === "web_search_call");
+
+  const mapped = calls
+    .flatMap((call) => call?.action?.sources || [])
+    .filter(Boolean)
+    .map((src) => {
+      const url = src.url || src.link || src.sourceUrl || "";
+      const title =
+        src.publisher ||
+        src.title ||
+        src.name ||
+        (url ? url : "Πηγή");
+
+      return {
+        title,
+        url,
+      };
+    });
+
+  const seen = new Set();
+  const unique = [];
+
+  for (const src of mapped) {
+    const key = (src.url || src.title || "").toLowerCase();
+    if (key && seen.has(key)) continue;
+    if (key) seen.add(key);
+    unique.push(src);
+  }
+
+  return unique;
+}
+
 export {
   cleanSimplifiedText,
   extractSourceDomains,
@@ -108,4 +160,5 @@ export {
   getWebSearchDateContext,
   normalizeTitle,
   dedupeArticlesByUrlOrTitle,
+  extractWebSearchSources,
 };

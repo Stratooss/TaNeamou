@@ -8,6 +8,7 @@ import {
 import {
   cleanSimplifiedText,
   extractSourceDomains,
+  extractWebSearchSources,
 } from "./llm/textUtils.js";
 
 // Paths
@@ -302,7 +303,8 @@ ${JSON.stringify(payload, null, 2)}
   const response = await openai.responses.create({
     model: "gpt-4.1",
     instructions: SERIOUS_DIGEST_SYSTEM_PROMPT,
-    tools: [{ type: "web_search_preview" }],
+    tools: [{ type: "web_search" }],
+    include: ["web_search_call.action.sources"],
     input: userContent,
     max_output_tokens: 1600,
   });
@@ -310,12 +312,36 @@ ${JSON.stringify(payload, null, 2)}
   let simpleText = extractTextFromResponse(response).trim();
   simpleText = stripSourcesAndInlineLinks(simpleText);
   simpleText = cleanSimplifiedText(simpleText);
+  const webSources = extractWebSearchSources(response);
 
-  const sourceUrls = [];
+  const mergedSources = [...webSources];
+
   if (hasMain) {
-    sourceUrls.push(...collectSourceUrls(mainArticle));
+    mergedSources.push({
+      title: mainArticle.sourceName || mainArticle.sourceUrl || "Πηγή",
+      url: mainArticle.sourceUrl || mainArticle.url || "",
+    });
   }
 
+  for (const rel of relatedArticles || []) {
+    mergedSources.push({
+      title: rel.sourceName || rel.sourceUrl || "Πηγή",
+      url: rel.sourceUrl || rel.url || "",
+    });
+  }
+
+  const dedupedSources = [];
+  const seenSources = new Set();
+
+  for (const src of mergedSources) {
+    if (!src) continue;
+    const key = (src.url || src.title || "").toLowerCase();
+    if (key && seenSources.has(key)) continue;
+    if (key) seenSources.add(key);
+    dedupedSources.push(src);
+  }
+
+  const sourceUrls = dedupedSources.map((s) => s.url).filter(Boolean);
   let sourceDomains = extractSourceDomains(sourceUrls);
 
   if (!sourceDomains.length && !hasMain) {
@@ -323,8 +349,7 @@ ${JSON.stringify(payload, null, 2)}
   }
 
   if (!sourceDomains.length && hasMain) {
-    const nameFallbacks = [];
-    if (mainArticle?.sourceName) nameFallbacks.push(mainArticle.sourceName);
+    const nameFallbacks = dedupedSources.map((s) => s.title).filter(Boolean);
     if (nameFallbacks.length) {
       sourceDomains = [...new Set(nameFallbacks)];
     }
@@ -337,7 +362,8 @@ ${JSON.stringify(payload, null, 2)}
     topicLabel,
     title,
     simpleText,
-    sources: sourceDomains,
+    sourceDomains,
+    sources: dedupedSources,
     mainArticleId: hasMain ? mainArticle.id : null,
     relatedArticleIds: [], // δεν χρησιμοποιούμε πλέον related, ένα γεγονός ανά θεματική
     createdAt: new Date().toISOString(),

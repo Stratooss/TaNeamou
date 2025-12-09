@@ -119,6 +119,15 @@
         font-size: 1.02rem;
       }
 
+      .article-thumb {
+        width: 100%;
+        height: 160px;
+        object-fit: cover;
+        border-radius: 0.75rem;
+        margin-bottom: 0.6rem;
+        border: 1px solid var(--card-border);
+      }
+
       /* ===== Grid για σοβαρές θεματικές (με εικόνες full) ===== */
       .category-grid {
         display: grid;
@@ -294,6 +303,15 @@
             ? "article.html?id=" + encodeURIComponent(article.id) +
               "&category=" + encodeURIComponent(category)
             : null;
+
+          if (article.imageUrl) {
+            const imgEl = document.createElement("img");
+            imgEl.className = "article-thumb";
+            imgEl.loading = "lazy";
+            imgEl.src = article.imageUrl;
+            imgEl.alt = article.simpleTitle || article.title || "Εικόνα άρθρου";
+            card.appendChild(imgEl);
+          }
 
           const titleEl = document.createElement("h2");
           if (href) {

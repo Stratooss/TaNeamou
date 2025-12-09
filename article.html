@@ -192,34 +192,29 @@
       color: #0b1224;
     }
 
-    /* 🔎 Πηγές στο τέλος, με "εικονίδιο" */
-    .source-block {
-      margin-top: 1rem;
-      font-size: 0.98rem;
+    /* 🔎 Ενότητα πηγών με απλή λίστα */
+    .sources-box {
+      margin-top: 1.25rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--card-border);
+    }
+
+    .sources-box p {
       color: var(--text-muted);
-    }
-
-    .source-label {
-      font-weight: 700;
-      color: var(--text-main);
       margin-bottom: 0.35rem;
+      font-size: 0.95rem;
     }
 
-    .source-list {
-      list-style: none;
-      padding-left: 0;
-      margin: 0.25rem 0 0;
-    }
-
-    .source-list li {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
+    .sources-box ul {
+      padding-left: 1rem;
+      margin: 0;
+      color: var(--text-main);
       font-size: 0.98rem;
+      line-height: 1.5;
     }
 
-    .source-icon {
-      font-size: 1.1rem;
+    .sources-box li {
+      margin-bottom: 0.2rem;
     }
   </style>
 </head>
@@ -254,7 +249,12 @@
 
         <!-- Εικόνα άρθρου από news.json (όχι για lifestyle) -->
         <div id="article-image-wrapper" class="article-image-wrapper" style="display:none;">
-          <img id="article-image" class="article-image" alt="Εικόνα άρθρου" />
+          <img
+            id="article-image"
+            class="article-image"
+            alt="Εικόνα άρθρου"
+            style="display: none;"
+          />
         </div>
 
         <!-- Βίντεο άρθρου -->
@@ -274,7 +274,7 @@
         </div>
 
         <!-- 🔚 Πηγές ΜΟΝΟ στο τέλος -->
-        <div id="article-source" class="source-block"></div>
+        <div id="article-sources" class="sources-box"></div>
       </article>
     </div>
   </main>
@@ -441,9 +441,9 @@
       bgEl.style.display = "block";
     }
 
-    // 🔚 Πηγές στο τέλος, με εικονίδιο – ΤΩΡΑ ως links προς site ή άρθρο
-    function renderSourcesBlock(sourceEl, article, fallbackText) {
-      if (!sourceEl) return;
+    // 🔚 Πηγές στο τέλος, με εικονίδιο – ως links προς site ή άρθρο
+    function renderSourcesSection(container, article, fallbackText) {
+      if (!container) return;
 
       const sources = Array.isArray(article?.sources) ? article.sources : [];
       const fallbackName = article?.sourceName || null;
@@ -451,9 +451,17 @@
 
       const items = [];
 
+      const hostnameFromUrl = (url) => {
+        if (!url) return "";
+        try {
+          return new URL(url).hostname.replace(/^www\./, "");
+        } catch {
+          return url;
+        }
+      };
+
       if (sources.length) {
         for (const s of sources) {
-          // ΠΕΡΙΠΤΩΣΗ 1: απλό string, π.χ. "ertnews.gr" → link σε https://ertnews.gr
           if (typeof s === "string") {
             const domain = s
               .replace(/^https?:\/\//i, "")
@@ -462,79 +470,56 @@
 
             if (!domain) continue;
 
-            const url = "https://" + domain;
-            items.push({ name: domain, url });
+            const url = s.startsWith("http") ? s : "https://" + domain;
+            const title = domain || hostnameFromUrl(url) || "Πηγή";
+            items.push({ title, url });
             continue;
           }
 
-          // ΠΕΡΙΠΤΩΣΗ 2: object με πιθανό url
-          let url = s?.sourceUrl || s?.url || null;
-          let name = s?.sourceName || s?.source || null;
+          const url = s?.url || s?.sourceUrl || "";
+          const title =
+            s?.title ||
+            s?.publisher ||
+            s?.sourceName ||
+            s?.source ||
+            (url ? hostnameFromUrl(url) : "");
 
-          // Αν δεν έχουμε όνομα αλλά έχουμε url → βγάλε το domain ως όνομα
-          if (!name && url) {
-            try {
-              const u = new URL(url);
-              name = u.hostname.replace(/^www\./i, "");
-            } catch {
-              name = url;
-            }
-          }
-
-          if (!name && !url) {
-            name = "Πηγή";
-          }
-
-          items.push({ name, url });
+          if (!url && !title) continue;
+          items.push({ title: title || "Πηγή", url });
         }
-      } else if (fallbackUrl && fallbackUrl !== "#") {
-        // fallback: έχουμε μόνο ένα sourceUrl στο άρθρο
-        let name = fallbackName;
-        if (!name) {
-          try {
-            const u = new URL(fallbackUrl);
-            name = u.hostname.replace(/^www\./i, "");
-          } catch {
-            name = fallbackUrl;
-          }
-        }
-        items.push({ name, url: fallbackUrl });
       }
 
-      if (!items.length && !fallbackText) {
-        sourceEl.innerHTML = "";
+      if (!items.length && fallbackUrl && fallbackUrl !== "#") {
+        items.push({ title: fallbackName || "Πηγή", url: fallbackUrl });
+      }
+
+      if (!items.length && fallbackText) {
+        items.push({ title: fallbackText, url: "" });
+      }
+
+      const validItems = items.filter((i) => i.title || i.url);
+      if (!validItems.length) {
+        container.innerHTML = "";
+        container.style.display = "none";
         return;
       }
 
-      let html = '<div class="source-label">Πηγές</div><ul class="source-list">';
-
-      if (items.length) {
-        for (const item of items) {
-          const safeName = escapeHtml(item.name || "Πηγή");
-
+      const itemsHtml = validItems
+        .map((item) => {
+          const safeTitle = escapeHtml(item.title || "Πηγή");
           if (item.url) {
             const safeUrl = escapeHtml(item.url);
-            html +=
-              '<li><span class="source-icon">🌐</span>' +
-              '<a href="' +
-              safeUrl +
-              '" target="_blank" rel="noopener noreferrer">' +
-              safeName +
-              "</a></li>";
-          } else {
-            html +=
-              '<li><span class="source-icon">🌐</span>' + safeName + "</li>";
+            return `<li><a href="${safeUrl}" target="_blank" rel="noopener">${safeTitle}</a></li>`;
           }
-        }
-      } else if (fallbackText) {
-        html +=
-          '<li><span class="source-icon">🌐</span>' +
-          escapeHtml(fallbackText) +
-          "</li>";
-      }
+          return `<li>${safeTitle}</li>`;
+        })
+        .join("");
 
-      html += "</ul>";
-      sourceEl.innerHTML = html;
+      container.innerHTML = `
+        <p class="text-muted small mb-1">Πηγές:</p>
+        <ul class="small mb-0 ps-3">${itemsHtml}</ul>
+      `;
+      container.style.display = "block";
     }
 
     function renderArticleContent({
@@ -568,10 +553,12 @@
         if (article.imageUrl) {
           imageEl.src = article.imageUrl;
           imageEl.alt = displayTitle || "Εικόνα άρθρου";
+          imageEl.style.display = "block";
           imageWrapper.style.display = "block";
         } else {
           imageEl.removeAttribute("src");
           imageEl.alt = "";
+          imageEl.style.display = "none";
           imageWrapper.style.display = "none";
         }
       }
@@ -609,7 +596,7 @@
         }
       }
 
-      renderSourcesBlock(sourceEl, article, null);
+      renderSourcesSection(sourceEl, article, null);
 
       document.title = displayTitle + " - Εύκολα Νέα";
       listenBtn.disabled = false;
@@ -795,7 +782,7 @@
           : false;
 
         if (digestHasSources) {
-          renderSourcesBlock(sourceEl, article, null);
+          renderSourcesSection(sourceEl, article, null);
         } else if (article.mainArticleId) {
           try {
             const newsRes = await fetch("news.json?cachebust=" + Date.now());
@@ -808,16 +795,16 @@
                 (a) => String(a.id) === String(article.mainArticleId)
               );
               if (mainSourceArticle) {
-                renderSourcesBlock(sourceEl, mainSourceArticle, null);
+                renderSourcesSection(sourceEl, mainSourceArticle, null);
               } else {
-                renderSourcesBlock(
+                renderSourcesSection(
                   sourceEl,
                   { sources: [] },
                   "Βασισμένο σε πολλές ελληνικές ειδησεογραφικές πηγές."
                 );
               }
             } else {
-              renderSourcesBlock(
+              renderSourcesSection(
                 sourceEl,
                 { sources: [] },
                 "Βασισμένο σε πολλές ελληνικές ειδησεογραφικές πηγές."
@@ -825,14 +812,14 @@
             }
           } catch (e) {
             console.error("Σφάλμα φόρτωσης news.json για τις πηγές:", e);
-            renderSourcesBlock(
+            renderSourcesSection(
               sourceEl,
               { sources: [] },
               "Βασισμένο σε πολλές ελληνικές ειδησεογραφικές πηγές."
             );
           }
         } else {
-          renderSourcesBlock(
+          renderSourcesSection(
             sourceEl,
             { sources: [] },
             "Βασισμένο σε πολλές ελληνικές ειδησεογραφικές πηγές."
@@ -908,7 +895,7 @@
         bodyEl.innerHTML = cleaned.replace(/\n/g, "<br/>");
 
         // Πηγές στο τέλος (από το lifestyle.json)
-        renderSourcesBlock(sourceEl, article, null);
+        renderSourcesSection(sourceEl, article, null);
 
         document.title = displayTitle + " - Εύκολα Νέα";
 
@@ -926,7 +913,7 @@
     async function loadArticle() {
       const titleEl = document.getElementById("article-title");
       const bodyEl = document.getElementById("article-body");
-      const sourceEl = document.getElementById("article-source");
+      const sourceEl = document.getElementById("article-sources");
       const imageWrapper = document.getElementById("article-image-wrapper");
       const imageEl = document.getElementById("article-image");
       const videoWrapper = document.getElementById("article-video-wrapper");
