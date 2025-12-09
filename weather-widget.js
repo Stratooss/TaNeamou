@@ -39,7 +39,7 @@ function mapWeatherToIconAndSky(code, isNight) {
   return { icon: "🌈", sky: "άγνωστος" };
 }
 
-// υπολογίζει τη μέγιστη πιθανότητα βροχής στις επόμενες ώρες
+// υπολογίζει τη μέγιστη πιθανότητα βροχής στις επόμενες ώρες (μέχρι 12 ώρες)
 function getFutureRainProbability(data) {
   const hourly = data && data.hourly;
   if (
@@ -72,24 +72,31 @@ function getFutureRainProbability(data) {
   return maxProb;
 }
 
-// Πρόταση για τα ρούχα, με βάση τη θερμοκρασία
+// ===== Ρούχα / θερμοκρασία =====
+
 function getClothingSentence(tempValue) {
   if (typeof tempValue !== "number" || isNaN(tempValue)) {
-    return "Βάλε ρούχα που σε κάνουν να νιώθεις άνετα.";
+    return "Διάλεξε ρούχα που σε κάνουν να νιώθεις άνετα.";
   }
-  if (tempValue <= 5) {
-    return "Θα χρειαστείς χοντρό μπουφάν.";
+
+  if (tempValue <= 10) {
+    return "Σήμερα έχει κρύο. Βάλε μπουφάν.";
   }
-  if (tempValue <= 15) {
-    return "Θα χρειαστείς ζεστή ζακέτα.";
+  if (tempValue <= 20) {
+    return "Σήμερα έχει δροσιά. Βάλε ζακέτα.";
   }
-  if (tempValue <= 25) {
-    return "Θα νιώθεις καλά με μια ζακέτα.";
-  }
-  return "Θα νιώθεις καλά με ελαφρά ρούχα.";
+  return "Σήμερα έχει ζέστη. Μπορείς να βάλεις κοντομάνικο.";
 }
 
-// Πρόταση για τη βροχή αργότερα σήμερα
+// απλή ταξινόμηση θερμοκρασίας (για μικρές προγνώσεις στο modal)
+function classifyTempLabel(temp) {
+  if (typeof temp !== "number" || isNaN(temp)) return null;
+  if (temp <= 10) return "κρύο";
+  if (temp <= 20) return "δροσιά";
+  return "ζέστη";
+}
+
+// Πρόταση για τη βροχή αργότερα σήμερα (γενική)
 function getFutureRainSentence(futureMaxProb, rainingNow) {
   if (futureMaxProb == null) {
     return "Δεν ξέρουμε αν θα βρέξει αργότερα.";
@@ -112,7 +119,7 @@ function getFutureRainSentence(futureMaxProb, rainingNow) {
   return "Μάλλον δεν θα βρέξει αργότερα.";
 }
 
-// Πρόταση για την ομπρέλα
+// Πρόταση για την ομπρέλα (για το κύριο widget)
 function getUmbrellaSentence(futureMaxProb, rainingNow) {
   if (rainingNow) {
     return "Αν βγεις έξω, πάρε ομπρέλα.";
@@ -129,7 +136,7 @@ function getUmbrellaSentence(futureMaxProb, rainingNow) {
   return "Η ομπρέλα μάλλον δεν χρειάζεται σήμερα.";
 }
 
-// ===== Βοηθητικές για χρονικές σειρές (πρωί–μεσημέρι–βράδυ) =====
+// ===== Βοηθητικές για χρονικές περιόδους (modal) =====
 
 function isSameDay(a, b) {
   return (
@@ -139,11 +146,24 @@ function isSameDay(a, b) {
   );
 }
 
-// φτιάχνει σειρά από emojis για ένα χρονικό διάστημα της ημέρας
-function buildEmojiTimelineForPeriod(hourly, periodStartHour, periodEndHour, now) {
+function buildRainDescription(maxProb) {
+  if (maxProb == null) return null;
+  if (maxProb >= 60) return "Θα βρέξει.";
+  if (maxProb >= 30) return "Μπορεί να βρέξει.";
+  return "Δεν φαίνεται να βρέξει.";
+}
+
+// φτιάχνει σύνοψη για μια περίοδο (π.χ. Πρωί) με emojis + μικρή πρόγνωση
+function buildPeriodSummary(hourly, periodStartHour, periodEndHour, now) {
   const times = hourly.time || [];
   const codes = hourly.weather_code || [];
+  const probs = hourly.precipitation_probability || [];
+  const temps = hourly.temperature_2m || [];
+
   const icons = [];
+  let maxProb = 0;
+  let tempSum = 0;
+  let tempCount = 0;
 
   for (let i = 0; i < times.length; i++) {
     const t = new Date(times[i]);
@@ -158,22 +178,59 @@ function buildEmojiTimelineForPeriod(hourly, periodStartHour, periodEndHour, now
     const rawCode = codes[i];
     const code =
       typeof rawCode === "number" ? rawCode : Number(rawCode);
-    if (isNaN(code)) continue;
+    if (!isNaN(code)) {
+      const isNight = h < 6 || h >= 20;
+      const { icon } = mapWeatherToIconAndSky(code, isNight);
+      if (!icons.length || icons[icons.length - 1] !== icon) {
+        icons.push(icon);
+      }
+    }
 
-    const isNight = h < 6 || h >= 20;
-    const { icon } = mapWeatherToIconAndSky(code, isNight);
+    const p =
+      typeof probs[i] === "number" ? probs[i] : Number(probs[i]);
+    if (!isNaN(p) && p > maxProb) {
+      maxProb = p;
+    }
 
-    // Αφαιρούμε συνεχόμενα ίδια icons για να μη γίνεται σούπα
-    if (!icons.length || icons[icons.length - 1] !== icon) {
-      icons.push(icon);
+    const tempVal =
+      typeof temps[i] === "number" ? temps[i] : Number(temps[i]);
+    if (!isNaN(tempVal)) {
+      tempSum += tempVal;
+      tempCount += 1;
     }
   }
 
-  return icons.join("");
+  const emojiSeries = icons.length ? icons.join("") : "❓";
+
+  const rainText = buildRainDescription(maxProb);
+
+  let tempText = "";
+  if (tempCount > 0) {
+    const avgTemp = tempSum / tempCount;
+    const label = classifyTempLabel(avgTemp);
+    if (label === "κρύο") {
+      tempText = "Θα έχει κρύο.";
+    } else if (label === "δροσιά") {
+      tempText = "Θα έχει δροσιά.";
+    } else if (label === "ζέστη") {
+      tempText = "Θα έχει ζέστη.";
+    }
+  }
+
+  const parts = [];
+  if (rainText) parts.push(rainText);
+  if (tempText) parts.push(tempText);
+  const shortText = parts.join(" ");
+
+  return {
+    emojiSeries,
+    shortText,
+    maxProb,
+  };
 }
 
-// φτιάχνει τις χρονικές σειρές για σήμερα: πρωί, μεσημέρι–απόγευμα, βράδυ
-function buildDailyEmojiTimelines(data, now) {
+// φτιάχνει περιόδους για Πρωί / Μεσημέρι / Απόγευμα / Βράδυ
+function buildDailyPeriodSummaries(data, now) {
   const hourly = data && data.hourly;
   if (
     !hourly ||
@@ -183,15 +240,12 @@ function buildDailyEmojiTimelines(data, now) {
     return null;
   }
 
-  const morning = buildEmojiTimelineForPeriod(hourly, 6, 12, now);
-  const noon = buildEmojiTimelineForPeriod(hourly, 12, 18, now);
-  const evening = buildEmojiTimelineForPeriod(hourly, 18, 24, now);
+  const morning = buildPeriodSummary(hourly, 6, 12, now);
+  const midday = buildPeriodSummary(hourly, 12, 16, now);
+  const afternoon = buildPeriodSummary(hourly, 16, 20, now);
+  const evening = buildPeriodSummary(hourly, 20, 24, now);
 
-  return {
-    morning: morning || "❓",
-    noon: noon || "❓",
-    evening: evening || "❓",
-  };
+  return { morning, midday, afternoon, evening };
 }
 
 // ===== Μετάφραση ονόματος πόλης σε ελληνικά =====
@@ -201,7 +255,12 @@ function translateCityNameToGreek(name) {
   const n = name.toLowerCase().trim();
 
   // Αθήνα - πιάσε διάφορες παραλλαγές
-  if (n.includes("athens") || n.includes("athina") || n.includes("athín") || n === "athens municipality") {
+  if (
+    n.includes("athens") ||
+    n.includes("athina") ||
+    n.includes("athín") ||
+    n === "athens municipality"
+  ) {
     return "Αθήνα";
   }
   // Θεσσαλονίκη
@@ -221,7 +280,7 @@ function translateCityNameToGreek(name) {
     return "Λάρισα";
   }
   // Βόλος
-  if (n.includes("volos") || n.includes("volos municipality")) {
+  if (n.includes("volos")) {
     return "Βόλος";
   }
   // Ιωάννινα
@@ -355,8 +414,8 @@ async function initWeatherWidget() {
       "&longitude=" +
       loc.lon +
       "&current=temperature_2m,apparent_temperature,weather_code,precipitation" +
-      // Ζητάμε ΚΑΙ ωριαίο weather_code για τις χρονικές σειρές
-      "&hourly=weather_code,precipitation_probability" +
+      // Ζητάμε ωριαίο weather_code, πιθανότητα βροχής και θερμοκρασία
+      "&hourly=weather_code,precipitation_probability,temperature_2m" +
       "&timezone=auto";
 
     const res = await fetch(url);
@@ -414,7 +473,7 @@ async function initWeatherWidget() {
         "Τώρα στην περιοχή σου ο ουρανός είναι " + sky + ".";
     }
 
-    // 2️⃣ ΔΕΥΤΕΡΗ ΠΡΟΤΑΣΗ: Τι γίνεται ΑΡΓΟΤΕΡΑ
+    // 2️⃣ ΔΕΥΤΕΡΗ ΠΡΟΤΑΣΗ: Τι γίνεται ΑΡΓΟΤΕΡΑ (γενικά για σήμερα)
     const secondSentence = getFutureRainSentence(
       futureMaxProb,
       rainingNow
@@ -423,7 +482,7 @@ async function initWeatherWidget() {
     // 3️⃣ ΤΡΙΤΗ ΠΡΟΤΑΣΗ: Ρούχα
     const thirdSentence = getClothingSentence(tempValue);
 
-    // 4️⃣ ΤΕΤΑΡΤΗ ΠΡΟΤΑΣΗ: Ομπρέλα
+    // 4️⃣ ΤΕΤΑΡΤΗ ΠΡΟΤΑΣΗ: Ομπρέλα (για το widget)
     const fourthSentence = getUmbrellaSentence(
       futureMaxProb,
       rainingNow
@@ -438,25 +497,47 @@ async function initWeatherWidget() {
       adviceEl.textContent = thirdSentence + " " + fourthSentence;
     }
 
-    // ===== Προετοιμασία πρόγνωσης για το modal (bullets με χρονικές σειρές) =====
-    const emojiTimelines = buildDailyEmojiTimelines(data, now);
+    // ===== Προετοιμασία πρόγνωσης για το modal =====
+    const periodSummaries = buildDailyPeriodSummaries(data, now);
 
-    const bulletForecast = emojiTimelines
+    const bulletForecast = periodSummaries
       ? [
           {
-            label: "🌅 Πρωί (06:00–12:00)",
-            emojiSeries: emojiTimelines.morning,
+            label: "🌅 Πρωί",
+            emojiSeries: periodSummaries.morning.emojiSeries,
+            shortText: periodSummaries.morning.shortText,
           },
           {
-            label: "🌤️ Μεσημέρι – Απόγευμα (12:00–18:00)",
-            emojiSeries: emojiTimelines.noon,
+            label: "🌞 Μεσημέρι",
+            emojiSeries: periodSummaries.midday.emojiSeries,
+            shortText: periodSummaries.midday.shortText,
           },
           {
-            label: "🌙 Βράδυ (18:00–24:00)",
-            emojiSeries: emojiTimelines.evening,
+            label: "🌇 Απόγευμα",
+            emojiSeries: periodSummaries.afternoon.emojiSeries,
+            shortText: periodSummaries.afternoon.shortText,
+          },
+          {
+            label: "🌙 Βράδυ",
+            emojiSeries: periodSummaries.evening.emojiSeries,
+            shortText: periodSummaries.evening.shortText,
           },
         ]
       : [];
+
+    const extraLines = [];
+    if (thirdSentence) {
+      extraLines.push("👕 " + thirdSentence);
+    }
+
+    const shouldShowUmbrella =
+      rainingNow ||
+      (futureMaxProb != null && futureMaxProb >= 30);
+
+    // ΣΤΟ MODAL: μιλάμε για ομπρέλα ΜΟΝΟ αν υπάρχει σοβαρή πιθανότητα βροχής
+    if (shouldShowUmbrella) {
+      extraLines.push("☂️ Αν βγεις έξω, πάρε μαζί σου ομπρέλα.");
+    }
 
     if (widgetEl && typeof window.openWeatherModal === "function") {
       widgetEl.addEventListener("click", () => {
@@ -465,10 +546,7 @@ async function initWeatherWidget() {
             ? "Καιρός σήμερα: " + greekCity
             : "Καιρός σήμερα",
           bulletForecast,
-          extraLines: [
-            "👕 " + thirdSentence,
-            "☂️ " + fourthSentence,
-          ],
+          extraLines,
         });
       });
     }
@@ -499,3 +577,4 @@ async function initWeatherWidget() {
 
 // κάνουμε την init διαθέσιμη στο window
 window.initWeatherWidget = initWeatherWidget;
+
