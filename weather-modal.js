@@ -1,5 +1,6 @@
-// weatherModal.js
+// weather-modal.js
 // Απλό custom modal για την πρόγνωση καιρού σε bullets
+
 "use strict";
 
 function hideWeatherModal(modalEl) {
@@ -31,7 +32,7 @@ function initWeatherModal() {
 
 // forecast = {
 //   title: string,
-//   bulletForecast: [{ label, emojiSeries }],
+//   bulletForecast: [{ label, emojiSeries, shortText }],
 //   extraLines: [string]
 // }
 function openWeatherModal(forecast) {
@@ -41,11 +42,14 @@ function openWeatherModal(forecast) {
 
   if (!modalEl || !titleEl || !bodyEl) return;
 
-  const title = forecast && forecast.title
-    ? forecast.title
-    : "Καιρός σήμερα";
+  const title =
+    forecast && forecast.title
+      ? forecast.title
+      : "Καιρός σήμερα";
 
-  const bulletForecast = Array.isArray(forecast && forecast.bulletForecast)
+  const bulletForecast = Array.isArray(
+    forecast && forecast.bulletForecast
+  )
     ? forecast.bulletForecast
     : [];
 
@@ -59,10 +63,18 @@ function openWeatherModal(forecast) {
     .map((item) => {
       const label = item.label || "";
       const series = item.emojiSeries || "";
+      const text = item.shortText || "";
       return `
         <li>
-          <span class="weather-modal-bullet-label">${label}:</span>
-          <span class="weather-modal-bullet-series">${series}</span>
+          <div>
+            <span class="weather-modal-bullet-label">${label}:</span>
+            <span class="weather-modal-bullet-series">${series}</span>
+          </div>
+          ${
+            text
+              ? `<div class="weather-modal-bullet-text">${text}</div>`
+              : ""
+          }
         </li>
       `;
     })
