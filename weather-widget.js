@@ -1,4 +1,4 @@
-// weatherWidget.js
+// weather-widget.js
 // Widget καιρού σε απλά ελληνικά, με 4 σύντομες προτάσεις
 // + modal πρόγνωσης (μέσω window.openWeatherModal)
 
@@ -194,6 +194,45 @@ function buildDailyEmojiTimelines(data, now) {
   };
 }
 
+// ===== Μετάφραση ονόματος πόλης σε ελληνικά =====
+
+function translateCityNameToGreek(name) {
+  if (!name || typeof name !== "string") return null;
+  const n = name.toLowerCase().trim();
+
+  // Αθήνα - πιάσε διάφορες παραλλαγές
+  if (n.includes("athens") || n.includes("athina") || n.includes("athín") || n === "athens municipality") {
+    return "Αθήνα";
+  }
+  // Θεσσαλονίκη
+  if (n.includes("thessaloniki")) {
+    return "Θεσσαλονίκη";
+  }
+  // Πάτρα
+  if (n.includes("patras") || n.includes("patra")) {
+    return "Πάτρα";
+  }
+  // Ηράκλειο
+  if (n.includes("heraklion") || n.includes("heraclion")) {
+    return "Ηράκλειο";
+  }
+  // Λάρισα
+  if (n.includes("larisa") || n.includes("larissa")) {
+    return "Λάρισα";
+  }
+  // Βόλος
+  if (n.includes("volos") || n.includes("volos municipality")) {
+    return "Βόλος";
+  }
+  // Ιωάννινα
+  if (n.includes("ioannina")) {
+    return "Ιωάννινα";
+  }
+
+  // default: άφησέ το όπως ήρθε (π.χ. αν είσαι σε άλλη χώρα)
+  return name;
+}
+
 // ===== Γεωεντοπισμός χρήστη =====
 
 // 1️⃣ browser geolocation
@@ -301,7 +340,10 @@ async function initWeatherWidget() {
     const hour = now.getHours();
     const isNight = hour < 6 || hour >= 20;
 
-    const locationLabel = loc.city || "η περιοχή σου";
+    const rawCity = loc.city;
+    const greekCity = translateCityNameToGreek(rawCity);
+    const locationLabel = greekCity || "η περιοχή σου";
+
     if (locationEl) {
       locationEl.textContent = "📍 " + locationLabel;
     }
@@ -417,11 +459,10 @@ async function initWeatherWidget() {
       : [];
 
     if (widgetEl && typeof window.openWeatherModal === "function") {
-      widgetEl.style.cursor = "pointer";
       widgetEl.addEventListener("click", () => {
         window.openWeatherModal({
-          title: loc.city
-            ? "Καιρός σήμερα: " + loc.city
+          title: greekCity
+            ? "Καιρός σήμερα: " + greekCity
             : "Καιρός σήμερα",
           bulletForecast,
           extraLines: [
@@ -433,11 +474,20 @@ async function initWeatherWidget() {
     }
   } catch (err) {
     console.error(err);
+
+    const locationEl = document.getElementById("weather-location");
+    const iconEl = document.getElementById("weather-icon");
+    const mainEl = document.getElementById("weather-text");
+    const subEl = document.getElementById("weather-subtext");
+    const adviceEl = document.getElementById("weather-advice");
+
     if (locationEl) {
       locationEl.textContent = "📍 Τοποθεσία άγνωστη";
     }
     if (iconEl) iconEl.textContent = "";
-    mainEl.textContent = "Δεν μπορώ να δείξω τον καιρό αυτή τη στιγμή.";
+    if (mainEl) {
+      mainEl.textContent = "Δεν μπορώ να δείξω τον καιρό αυτή τη στιγμή.";
+    }
     if (subEl) {
       subEl.textContent = "Προσπάθησε ξανά αργότερα.";
     }
