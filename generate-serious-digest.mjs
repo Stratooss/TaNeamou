@@ -152,20 +152,20 @@ function scoreSeriousArticle(article) {
 function isPixabayUrl(url) {
   if (!url || typeof url !== "string") return false;
   const normalized = url.trim();
-  const withProtocol = normalized.startsWith("//") ? `https:${normalized}` : normalized;
+  if (!/^https?:\/\//i.test(normalized)) return false;
   let u;
   try {
-    u = new URL(withProtocol);
+    u = new URL(normalized);
   } catch {
     return false;
   }
   if (!["http:", "https:"].includes(u.protocol)) return false;
   const host = u.hostname.toLowerCase();
   const path = u.pathname.toLowerCase();
+  const allowedHosts = new Set(["pixabay.com", "cdn.pixabay.com"]);
+  if (!allowedHosts.has(host)) return false;
   if (host === "cdn.pixabay.com") return true;
-  if (host === "pixabay.com")
-    return PIXABAY_ALLOWED_PATH_PREFIXES.some((p) => path.startsWith(p));
-  return false;
+  return PIXABAY_ALLOWED_PATH_PREFIXES.some((p) => path.startsWith(p));
 }
 
 // Διαβάζει JSON αν υπάρχει (για "κρατάω το προηγούμενο")
