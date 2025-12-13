@@ -4,19 +4,11 @@ import crypto from "crypto";
 import { CATEGORY_KEYS } from "./llm/newsCategories.js";
 import { simplifyNewsArticle } from "./llm/newsSimplifier.js";
 import { classifyNewsArticle } from "./llm/newsCategorizer.js";
-import { openai } from "./llm/openaiClient.js";
-import { WEB_SEARCH_NEWS_INSTRUCTIONS } from "./newsLlmInstructions.js";
 import {
   buildSourcesFooter,
   cleanSimplifiedText,
   extractSourceDomains,
-  getWebSearchDateContext,
   dedupeArticlesByUrlOrTitle,
-  extractWebSearchSources,
-  buildSearchQuery,
-  filterSearchResults,
-  rankAndDedupe,
-  extractHostname,
 } from "./llm/textUtils.js";
 
 export { CATEGORY_KEYS };
@@ -44,7 +36,8 @@ async function fetchPixabayImageForCategory(categoryKey) {
     return null;
   }
 
-  const baseQuery = CATEGORY_IMAGE_QUERIES[categoryKey] || "news abstract background";
+  const baseQuery =
+    CATEGORY_IMAGE_QUERIES[categoryKey] || "news abstract background";
 
   const url = new URL("https://pixabay.com/api/");
   url.searchParams.set("key", apiKey);
@@ -81,61 +74,38 @@ const MAX_ARTICLES_PER_CATEGORY = 6;
 const NEWS_JSON_PATH = new URL("./news.json", import.meta.url);
 
 // RSS feeds που θα διαβάζουμε
-// ⚠️ Πολλά από τα παρακάτω sites περιορίζουν τη χρήση (συχνά «μόνο για προσωπική χρήση»).
+// ⚠️ Πολλά sites περιορίζουν τη χρήση (συχνά «μόνο για προσωπική χρήση»).
 // Εδώ τα βάζουμε τεχνικά για να δουλεύει το pipeline· για δημόσια/εμπορική χρήση
 // είναι καλό να έχεις ρητή άδεια από τα μέσα.
 const FEEDS = [
   // Δημόσιος ραδιοτηλεοπτικός φορέας
-  {
-    url: "https://www.ertnews.gr/feed",
-    sourceName: "ERT News",
-  },
+  { url: "https://www.ertnews.gr/feed", sourceName: "ERT News" },
+
+  // Kathimerini (σταθερό endpoint από robots/sitemaps)
+  { url: "https://www.kathimerini.gr/infeeds/rss/nx-rss-feed.xml", sourceName: "Kathimerini" },
 
   // 🔹 Μεγάλες εφημερίδες / portals
-  {
-    url: "https://www.tanea.gr/feed",
-    sourceName: "TA NEA",
-  },
-  {
-    // Όλα τα νέα από ΤΟ ΒΗΜΑ
-    url: "https://www.tovima.gr/feed",
-    // Εναλλακτικά (αν θες πιο «γεμάτο» feed): "https://www.tovima.gr/feed/allnews/"
-    sourceName: "TO BHMA",
-  },
-  {
-    // Γενική ροή του news.gr
-    url: "https://www.news.gr/rss.ashx",
-    sourceName: "News.gr",
-  },
-  {
-    url: "https://www.902.gr/feed/featured",
-    sourceName: "902.gr – Επιλεγμένα",
-  },
-  {
-    url: "https://www.newsbomb.gr/oles-oi-eidhseis?format=feed&type=rss",
-    sourceName: "Newsbomb.gr",
-  },
-  {
-    url: "https://www.protagon.gr/feed",
-    sourceName: "Protagon",
-  },
+  { url: "https://www.tanea.gr/feed", sourceName: "TA NEA" },
+  { url: "https://www.tovima.gr/feed", sourceName: "TO BHMA" },
 
-  // 🔹 Αγγλόφωνη κάλυψη για Ελλάδα
-  {
-    url: "https://greekreporter.com/greece/feed",
-    sourceName: "Greek Reporter – Greece",
-  },
+  // Γενική ροή του news.gr
+  { url: "https://www.news.gr/rss.ashx", sourceName: "News.gr" },
+
+  // 902
+  { url: "https://www.902.gr/feed/featured", sourceName: "902.gr – Επιλεγμένα" },
+
+  // Protagon
+  { url: "https://www.protagon.gr/feed", sourceName: "Protagon" },
+
+  // Αγγλόφωνη κάλυψη για Ελλάδα
+  { url: "https://greekreporter.com/greece/feed", sourceName: "Greek Reporter – Greece" },
 
   // 🔹 Χαρούμενες ειδήσεις
-  {
-    url: "https://thehappynews.gr/feed/",
-    sourceName: "The Happy News",
-    categoryHints: ["happy"],
-  },
+  { url: "https://thehappynews.gr/feed/", sourceName: "The Happy News", categoryHints: ["happy"] },
 
-  // Αν θέλεις αργότερα μπορείς να προσθέσεις κι άλλα:
-  // { url: "https://topontiki.gr/rss", sourceName: "Το Ποντίκι" },
-  // { url: "https://dimokratiki.gr/feed", sourceName: "Δημοκρατική Ρόδου" },
+  // (ΠΡΟΑΙΡΕΤΙΚΟ) Euro2day RSS endpoints: αν σου δουλεύουν στον runner, κράτα τα.
+  // { url: "https://www.euro2day.gr/rss.ashx?catid=148", sourceName: "Euro2day – NewsWire" },
+  // { url: "https://www.euro2day.gr/rss.ashx?catid=124", sourceName: "Euro2day – Οικονομία" },
 ];
 
 // 🔹 Πηγές με πιο "ελαστικό" copyright (open data)
@@ -157,19 +127,6 @@ const parser = new Parser({
     ],
   },
 });
-
-function extractTextFromResponse(response) {
-  if (typeof response.output_text === "string") {
-    return response.output_text;
-  }
-
-  const first = response.output?.[0]?.content?.[0]?.text;
-  if (typeof first === "string") return first;
-  if (first?.text) return first.text;
-  if (first?.value) return first.value;
-
-  throw new Error("Δεν βρέθηκε text στο response του μοντέλου");
-}
 
 // Πολύ απλό καθάρισμα HTML -> απλό κείμενο
 function stripHtml(html) {
@@ -196,10 +153,7 @@ function extractImageUrl(item, html = "") {
       const url = m?.$?.url || m?.url;
       const medium = (m?.$?.medium || "").toLowerCase();
       const type = m?.$?.type || "";
-      if (
-        url &&
-        (medium === "image" || (type && type.startsWith("image/")))
-      ) {
+      if (url && (medium === "image" || (type && type.startsWith("image/")))) {
         return url;
       }
     }
@@ -355,172 +309,12 @@ function normalizeCategory(rawCategory) {
   return "fun"; // ασφαλής προεπιλογή εντός επιτρεπόμενων κατηγοριών
 }
 
-function searchQueriesForCategory(category) {
-  switch (category) {
-    case "happy":
-      return [
-        "ευχάριστες ειδήσεις καλά νέα Ελλάδα",
-        "θετικές ανθρώπινες ιστορίες Ελλάδα",
-        "χαρούμενες ειδήσεις σήμερα",
-      ];
-    case "serious":
-      return [
-        "σημαντικές ειδήσεις Ελλάδα σήμερα",
-        "πολιτική οικονομία τελευταία νέα",
-      ];
-    case "sports":
-      return ["αθλητικά νέα σήμερα Ελλάδα", "αποτελέσματα αγώνων Ελλάδα"];
-    case "screen":
-      return [
-        "ταινίες πρεμιέρες Ελλάδα",
-        "νέες σειρές τηλεόραση streaming Ελλάδα",
-        "φεστιβάλ κινηματογράφου Ελλάδα",
-      ];
-    case "culture":
-      return [
-        "συναυλίες Ελλάδα σήμερα",
-        "θεατρικές παραστάσεις Αθήνα σήμερα",
-        "πολιτιστικές εκδηλώσεις φεστιβάλ Ελλάδα",
-      ];
-    case "fun":
-      return ["εκδηλώσεις διασκέδαση Ελλάδα", "φεστιβάλ σήμερα Ελλάδα"];
-    default:
-      return ["σημερινές ειδήσεις Ελλάδα", "τελευταία νέα Ελλάδα"];
-  }
-}
-
-async function generateWebSearchArticleForCategory(categoryKey) {
-  const dateCtx = getWebSearchDateContext();
-  const queries = searchQueriesForCategory(categoryKey);
-
-  const userContent = `
-
-
-Κατηγορία: ${categoryKey}
-Ημερομηνία αναφοράς: ${dateCtx.todayLabel}
-Χθες: ${dateCtx.yesterdayLabel}
-Αύριο: ${dateCtx.tomorrowLabel}
-
-Θέλω:
-
-- Να χρησιμοποιήσεις ΜΟΝΟ web search (εργαλείο web_search_preview) για να βρεις ΕΝΑ πρόσφατο γεγονός που ταιριάζει στην κατηγορία "${categoryKey}".
-- Να γράψεις ένα σύντομο κείμενο σε πολύ απλά ελληνικά, σύμφωνα με τις οδηγίες του system prompt.
-- Να προτιμήσεις γεγονός από χθες/σήμερα/αύριο.
-
-Προτεινόμενες αναζητήσεις:
-${queries.map((q) => `- ${q}`).join("\n")}
-`;
-
-  const response = await openai.responses.create({
-    model: "gpt-4o",
-    instructions: WEB_SEARCH_NEWS_INSTRUCTIONS,
-    tools: [{ type: "web_search" }],
-    include: ["web_search_call.action.sources"],
-    input: userContent,
-    max_output_tokens: 1200,
-  });
-
-  const rawText = extractTextFromResponse(response).trim();
-  const cleaned = cleanSimplifiedText(rawText);
-
-  const firstLine =
-    cleaned.split(/\n+/).find((line) => line.trim()) ||
-    `Είδηση κατηγορίας ${categoryKey}`;
-
-  const simpleTitle = firstLine.replace(/\*+/g, "").trim().slice(0, 160);
-
-  const webSourcesRaw = extractWebSearchSources(response);
-
-  const { query, entities, eventDate } = buildSearchQuery({
-    title: simpleTitle,
-    summary: cleaned,
-    publishedAt: dateCtx.today,
-  });
-
-  const { accepted, rejected } = filterSearchResults(
-    webSourcesRaw,
-    entities,
-    eventDate,
-    { blocklist: ["inside track", "opinion", "column", "gallery"] }
-  );
-
-  const ranked = rankAndDedupe(accepted, {
-    whitelistDomains: [
-      "ertnews.gr",
-      "sport24.gr",
-      "gazzetta.gr",
-      "in.gr",
-      "tanea.gr",
-      "kathimerini.gr",
-      "cnn.gr",
-      "uefa.com",
-      "amna.gr",
-      "reuters.com",
-    ],
-    max: 4,
-  });
-
-  let finalSources = ranked;
-  if (!finalSources.length) {
-    finalSources = webSourcesRaw.slice(0, 2);
-  }
-
-  let sourceDomains = extractSourceDomains(
-    finalSources.map((s) => s.url).filter(Boolean)
-  );
-
-  if (!sourceDomains.length) {
-    sourceDomains = ["web.search"];
-  }
-
-  const footer = buildSourcesFooter(sourceDomains);
-  const simpleText = cleaned + footer;
-
-  const mainSourceName = finalSources[0]?.title || "web.search";
-  const mainSourceUrl = finalSources[0]?.url || "";
-
-  const reasonCounts = rejected.reduce((acc, r) => {
-    acc[r.reason] = (acc[r.reason] || 0) + 1;
-    return acc;
-  }, {});
-
-  const finalHosts = finalSources
-    .map((s) => extractHostname(s.url))
-    .filter(Boolean)
-    .join(", ");
-
-  console.log(
-    `🧭 sources fetch:${categoryKey} | query="${query}" | total=${webSourcesRaw.length} accepted=${accepted.length} rejected=${rejected.length} reasons=${JSON.stringify(
-      reasonCounts
-    )} final_hosts=${finalHosts}`
-  );
-
-  return {
-    id: crypto.randomUUID(),
-    title: simpleTitle,
-    simpleTitle,
-    simpleText,
-    sourceName: mainSourceName,
-    sourceUrl: mainSourceUrl,
-    sources: finalSources,
-    sourceDomains,
-    category: categoryKey,
-    categoryReason: "web_search_fallback",
-    isSensitive: false,
-    imageUrl: null,
-    videoUrl: null,
-    publishedAt: dateCtx.today.toISOString(),
-  };
-}
-
 // 🧠 Ομαλοποίηση τίτλου για ομαδοποίηση σε "θέματα"
 function normalizeTitleForGrouping(title) {
   if (!title) return "";
   return title
     .toLowerCase()
-    // πετάμε εισαγωγικά, σημεία στίξης κλπ.
     .replace(/[«»"“”'’.,!?;:()[\]]+/g, " ")
-    // πετάμε κοινές ετικέτες τύπου "live"
     .replace(/\blive\b/g, " ")
     .replace(/\s+/g, " ")
     .trim();
@@ -556,14 +350,10 @@ const TITLE_STOPWORDS = new Set([
   "σήμερα",
 ]);
 
-// Κλήση στο AI για απλοποίηση + κατηγοριοποίηση + παραφρασμένο τίτλο
-// Χρησιμοποιεί τα νέα, κοινά helpers simplifyNewsArticle και classifyNewsArticle
-// και τροφοδοτεί το LLM με όλα τα άρθρα της ίδιας θεματικής.
+// Κλήση στο AI για απλοποίηση + κατηγοριοποίηση
 async function simplifyAndClassifyText(topicGroup) {
   const { articles } = topicGroup;
-  if (!articles || articles.length === 0) {
-    return null;
-  }
+  if (!articles || articles.length === 0) return null;
 
   const parts = [];
   parts.push(
@@ -573,7 +363,7 @@ async function simplifyAndClassifyText(topicGroup) {
 
   articles.forEach((article, index) => {
     const src = article.sourceName || "Άγνωστη πηγή";
-    const truncatedText = article.rawText.slice(0, 4000); // όριο ανά άρθρο
+    const truncatedText = article.rawText.slice(0, 4000);
     parts.push(
       `\n\nΆρθρο ${index + 1}:\n` +
         `Πηγή: ${src}\n` +
@@ -600,9 +390,12 @@ async function simplifyAndClassifyText(topicGroup) {
 
   const hintedCategory =
     (topicGroup.categoryHints || []).find((c) => c && c !== "other") || null;
+
   const normalizedClassified = normalizeCategory(category);
   const finalCategory =
-    normalizedClassified !== "other" ? normalizedClassified : hintedCategory || "other";
+    normalizedClassified !== "other"
+      ? normalizedClassified
+      : hintedCategory || "other";
 
   const categoryReason =
     normalizedClassified !== "other"
@@ -635,9 +428,7 @@ function buildArticlesByCategory(allArticles) {
 
   /** @type {Record<string, any[]>} */
   const byCategory = {};
-  for (const key of CATEGORY_KEYS) {
-    byCategory[key] = [];
-  }
+  for (const key of CATEGORY_KEYS) byCategory[key] = [];
 
   for (const article of allArticles) {
     const cat = article.category || "other";
@@ -650,21 +441,18 @@ function buildArticlesByCategory(allArticles) {
   for (const key of CATEGORY_KEYS) {
     const items = byCategory[key] || [];
 
-    // Ταξινόμηση από το πιο πρόσφατο στο πιο παλιό
     items.sort((a, b) => {
       const da = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
       const db = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
       return db - da;
     });
 
-    // Πρώτα ειδήσεις τελευταίου 24ώρου
     const todayItems = items.filter((i) =>
       isWithinLast24Hours(new Date(i.publishedAt || now), now)
     );
 
     let selected = todayItems.slice(0, MAX_ARTICLES_PER_CATEGORY);
 
-    // Αν δεν φτάνουν οι "τελείως σημερινές", συμπληρώνουμε από τις πιο παλιές
     if (selected.length < MAX_ARTICLES_PER_CATEGORY) {
       const remaining = items.filter((i) => !todayItems.includes(i));
       selected = selected.concat(
@@ -678,28 +466,197 @@ function buildArticlesByCategory(allArticles) {
   return result;
 }
 
-async function backfillMissingCategories(allArticles) {
+function countByCategory(articles) {
+  const counts = {};
+  for (const key of TARGET_CATEGORIES) counts[key] = 0;
+  for (const a of articles) {
+    if (a?.category && counts[a.category] !== undefined) counts[a.category] += 1;
+  }
+  return counts;
+}
+
+// “φθηνό” guess για να μειώσουμε LLM calls στο backfill
+function guessCategoryFromTopic(topic) {
+  const hinted =
+    (topic.categoryHints || []).find((h) => normalizeCategory(h) !== "other") ||
+    null;
+  if (hinted) return normalizeCategory(hinted);
+
+  const t = (topic.title || "").toLowerCase();
+
+  // happy
+  if (
+    /χαρ(ο|ού)μεν|θετικ|καλ(ό|ο) ν(έ|ε)ο|συγκιν|δωρε(ά|α)|εθελον|βραβ(ε|εύ)/i.test(
+      t
+    )
+  )
+    return "happy";
+
+  // sports
+  if (
+    /(αεκ|παοκ|ολυμπιακ|παναθηναϊκ|super league|champions league|europa|conference|γκολ|νικη|ήττα|αγ(ώ|ω)νας|μπασκετ|nba)/i.test(
+      t
+    )
+  )
+    return "sports";
+
+  // screen
+  if (/(ταιν(ί|ι)α|σινεμ(ά|α)|box office|netflix|σειρ(ά|α)|streaming|hbo|disney)/i.test(t))
+    return "screen";
+
+  // culture
+  if (/(συναυλ(ί|ι)α|τραγο(ύ|υ)δι|άλμπουμ|μουσικ(ή|η)|θέατρ|παρ(ά|α)σταση|φεστιβ(ά|α)λ|πολιτισμ)/i.test(t))
+    return "culture";
+
+  // serious
+  if (/(κυβ(έ|ε)ρνηση|βουλ(ή|η)|υπουργ|πολιτικ|οικονομ|πληθωρισμ|επιτ(ό|ο)κ|ευρ(ώ|ω)|φορο|δικασ|ένταση|σύγκρουση|σεισμ|πυρκαγι(ά|α)|κακοκαιρ)/i.test(t))
+    return "serious";
+
+  // fun
+  if (/(εκδ(ή|η)λωση|β(ό|ο)λτα|εστιατ(ό|ο)ριο|bar|π(ά|a)ρτι|nightlife|διασκ(έ|ε)δαση)/i.test(t))
+    return "fun";
+
+  return null;
+}
+
+// Ενιαία κατασκευή “final article” από ένα topic (χρησιμοποιείται και στο main και στο backfill)
+async function buildFinalArticleFromTopic(topic, { tag = "" } = {}) {
+  const result = await simplifyAndClassifyText(topic);
+  if (!result || !result.simplifiedText) return null;
+
+  const isSensitive = Boolean(result.isSensitive);
+  if (isSensitive) return null;
+
+  const categoryKey =
+    result.normalizedCategory || normalizeCategory(result.rawCategory);
+
+  if (!TARGET_CATEGORIES.includes(categoryKey)) return null;
+
+  // 🧹 Αφαιρούμε διπλότυπες πηγές (ίδιο όνομα & link)
+  const sourcesMap = new Map();
+  for (const a of topic.articles || []) {
+    const name = a.sourceName || "Άγνωστη πηγή";
+    const url = a.sourceUrl || "";
+    const key = name + "|" + url;
+    if (!sourcesMap.has(key)) sourcesMap.set(key, { sourceName: name, sourceUrl: url });
+  }
+
+  const sourceLinks = Array.from(sourcesMap.values()).map((s) => ({
+    title: s.sourceName || "Πηγή",
+    url: s.sourceUrl || "",
+  }));
+
+  const primary = topic.articles?.[0] || {};
+
+  let mainSourceName = primary.sourceName || "Πηγή";
+  let mainSourceUrl = primary.sourceUrl || "";
+
+  if (sourceLinks.length === 1) {
+    mainSourceName = sourceLinks[0].title;
+    mainSourceUrl = sourceLinks[0].url;
+  } else if (sourceLinks.length > 1) {
+    mainSourceName = sourceLinks
+      .map((s) => s.title)
+      .filter(Boolean)
+      .join(", ");
+    const firstUrl = sourceLinks.find((s) => s.url)?.url || "";
+    mainSourceUrl = firstUrl || primary.sourceUrl || "";
+  }
+
+  const sourceUrls = sourceLinks.map((s) => s.url).filter(Boolean);
+  let sourceDomains = extractSourceDomains(sourceUrls);
+
+  if (!sourceDomains.length && primary.sourceUrl) {
+    sourceDomains = extractSourceDomains([primary.sourceUrl]);
+  }
+
+  if (!sourceDomains.length) {
+    const nameFallbacks = sourceLinks.map((s) => s.title).filter(Boolean);
+    if (nameFallbacks.length) sourceDomains = [...new Set(nameFallbacks)];
+  }
+
+  const footer = buildSourcesFooter(sourceDomains);
+  const cleanedText = cleanSimplifiedText(result.simplifiedText || "");
+  const simpleText = cleanedText + footer;
+
+  const reason = (result.categoryReason || "").trim();
+  const categoryReason = tag ? `${reason}${reason ? " | " : ""}${tag}` : reason;
+
+  return {
+    id: topic.id,
+    title: topic.title,
+    simpleTitle: result.simplifiedTitle || topic.title,
+    simpleText,
+
+    sourceName: mainSourceName,
+    sourceUrl: mainSourceUrl,
+    sourceDomains,
+    sources: sourceLinks,
+
+    category: categoryKey,
+    categoryReason,
+    isSensitive,
+
+    imageUrl: topic.imageUrl || null,
+    videoUrl: topic.videoUrl || null,
+    publishedAt: topic.publishedAt || null,
+  };
+}
+
+// RSS-only backfill: συμπληρώνουμε κατηγορίες από single-source topics (χωρίς web search)
+async function backfillMissingCategoriesFromTopics(allArticles, topics, usedTopicIds) {
+  const counts = countByCategory(allArticles);
+
   for (const category of TARGET_CATEGORIES) {
-    const current = allArticles.filter((a) => a.category === category);
-    const missing = Math.max(0, MIN_ARTICLES_PER_CATEGORY - current.length);
-    const availableSlots = Math.max(0, MAX_ARTICLES_PER_CATEGORY - current.length);
+    const current = counts[category] || 0;
+    const missing = Math.max(0, MIN_ARTICLES_PER_CATEGORY - current);
+    const availableSlots = Math.max(0, MAX_ARTICLES_PER_CATEGORY - current);
     const toGenerate = Math.min(missing, availableSlots);
 
-    if (toGenerate > 0) {
-      console.log(
-        `ℹ️ Fallback web search για την κατηγορία ${category} (λείπουν ${missing} άρθρα).`
-      );
-    }
+    if (toGenerate <= 0) continue;
 
-    for (let i = 0; i < toGenerate; i += 1) {
-      try {
-        const article = await generateWebSearchArticleForCategory(category);
-        if (article) {
-          allArticles.push(article);
+    console.log(
+      `ℹ️ RSS backfill για την κατηγορία ${category} (λείπουν ${missing} άρθρα).`
+    );
+
+    let added = 0;
+
+    const candidates = [...topics].sort((a, b) => {
+      const da = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
+      const db = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
+      return db - da;
+    });
+
+    // 3 περάσματα: hints -> guess -> οποιοδήποτε
+    const passes = [
+      (t) => (t.categoryHints || []).some((h) => normalizeCategory(h) === category),
+      (t) => guessCategoryFromTopic(t) === category,
+      () => true,
+    ];
+
+    for (const pass of passes) {
+      for (const topic of candidates) {
+        if (added >= toGenerate) break;
+        if (usedTopicIds.has(topic.id)) continue;
+        if (!pass(topic)) continue;
+
+        try {
+          const built = await buildFinalArticleFromTopic(topic, { tag: "rss_backfill" });
+          usedTopicIds.add(topic.id);
+
+          if (!built) continue;
+          if (built.category !== category) continue; // μπορεί το LLM να το βγάλει αλλού
+
+          allArticles.push(built);
+          counts[category] = (counts[category] || 0) + 1;
+          added += 1;
+
+          console.log(`✅ Backfill άρθρο για ${category}: ${built.simpleTitle}`);
+        } catch (err) {
+          console.error(`❌ Αποτυχία RSS backfill για ${category}:`, err);
         }
-      } catch (err) {
-        console.error(`❌ Αποτυχία web search fallback για ${category}:`, err);
       }
+      if (added >= toGenerate) break;
     }
   }
 }
@@ -708,29 +665,23 @@ async function backfillMissingCategories(allArticles) {
 function groupArticlesByTopic(rawArticles) {
   const groups = [];
 
-  // Παίρνουμε σύνολο "σημαντικών" λέξεων από τον τίτλο
   function getTitleWordSet(title) {
     const norm = normalizeTitleForGrouping(title);
     if (!norm) return new Set();
     return new Set(
-      norm
-        .split(" ")
-        .filter((w) => {
-          const word = w.trim();
-          if (word.length <= 3) return false;
-          if (TITLE_STOPWORDS.has(word)) return false;
-          return true;
-        })
+      norm.split(" ").filter((w) => {
+        const word = w.trim();
+        if (word.length <= 3) return false;
+        if (TITLE_STOPWORDS.has(word)) return false;
+        return true;
+      })
     );
   }
 
-  // Υπολογισμός ομοιότητας δύο συνόλων λέξεων (Jaccard-like)
   function similarity(setA, setB) {
     if (setA.size === 0 || setB.size === 0) return 0;
     let intersection = 0;
-    for (const w of setA) {
-      if (setB.has(w)) intersection++;
-    }
+    for (const w of setA) if (setB.has(w)) intersection++;
     const union = setA.size + setB.size - intersection;
     if (union === 0) return 0;
     return intersection / union;
@@ -741,7 +692,6 @@ function groupArticlesByTopic(rawArticles) {
     let bestGroup = null;
     let bestScore = 0;
 
-    // βρίσκουμε αν "κολλάει" καλύτερα σε κάποια υπάρχουσα ομάδα
     for (const group of groups) {
       const score = similarity(titleWords, group.titleWords);
       if (score > bestScore) {
@@ -750,15 +700,10 @@ function groupArticlesByTopic(rawArticles) {
       }
     }
 
-    // Κατώφλι ομοιότητας: αν μοιράζονται αρκετές λέξεις, τα θεωρούμε ίδιο θέμα
     if (bestGroup && bestScore >= TITLE_SIMILARITY_THRESHOLD) {
       bestGroup.articles.push(article);
-      // ενημερώνουμε και το word set της ομάδας (ένωση)
-      for (const w of titleWords) {
-        bestGroup.titleWords.add(w);
-      }
+      for (const w of titleWords) bestGroup.titleWords.add(w);
     } else {
-      // Νέο θέμα
       groups.push({
         idSeed: article.id,
         title: article.title,
@@ -768,13 +713,11 @@ function groupArticlesByTopic(rawArticles) {
     }
   }
 
-  // Τελική μετατροπή σε topicGroups, με id, εικόνα κλπ.
   const topicGroups = [];
 
   for (const group of groups) {
     const primary = group.articles[0];
 
-    // publishedAt = πιο πρόσφατο από την ομάδα
     let latestPublishedAt = primary.publishedAt || null;
     for (const a of group.articles) {
       if (!a.publishedAt) continue;
@@ -783,12 +726,9 @@ function groupArticlesByTopic(rawArticles) {
       }
     }
 
-    const imageUrl =
-      group.articles.find((a) => a.imageUrl)?.imageUrl || null;
-    const videoUrl =
-      group.articles.find((a) => a.videoUrl)?.videoUrl || null;
+    const imageUrl = group.articles.find((a) => a.imageUrl)?.imageUrl || null;
+    const videoUrl = group.articles.find((a) => a.videoUrl)?.videoUrl || null;
 
-    // id θέματος: hash από όλα τα raw ids της ομάδας
     const groupId = crypto
       .createHash("sha1")
       .update(group.articles.map((a) => a.id).sort().join("-"))
@@ -800,9 +740,7 @@ function groupArticlesByTopic(rawArticles) {
       if (Array.isArray(a.categoryHints)) {
         for (const h of a.categoryHints) {
           const normalized = normalizeCategory(h);
-          if (normalized && normalized !== "other") {
-            hintSet.add(normalized);
-          }
+          if (normalized && normalized !== "other") hintSet.add(normalized);
         }
       }
     }
@@ -848,7 +786,7 @@ async function run() {
       continue;
     }
 
-    const items = (rss.items || []).slice(0, 30); // παίρνουμε αρκετές για να έχουμε υλικό
+    const items = (rss.items || []).slice(0, 30);
 
     for (const item of items) {
       const title = item.title || "";
@@ -893,9 +831,10 @@ async function run() {
     console.warn("Δεν βρέθηκαν raw άρθρα από τα feeds.");
   }
 
-  // 2️⃣ Ομαδοποιούμε σε "θέματα" (1 θέμα = 1 ή περισσότερα άρθρα για την ίδια είδηση)
+  // 2️⃣ Ομαδοποιούμε σε "θέματα"
   const topicGroups = groupArticlesByTopic(rawArticles);
   const importantTopicGroups = topicGroups.filter((g) => g.isImportant);
+  const fallbackTopicGroups = topicGroups.filter((g) => !g.isImportant);
 
   console.log(`Βρέθηκαν ${topicGroups.length} θεματικές ομάδες άρθρων.`);
   console.log(
@@ -903,9 +842,16 @@ async function run() {
   );
 
   const allArticles = [];
+  const usedTopicIds = new Set();
 
-  // 3️⃣ Για κάθε θέμα, φτιάχνουμε ΕΝΑ νέο κείμενο με το LLM
-  for (const topic of importantTopicGroups) {
+  // 3️⃣ Πρώτα παράγουμε άρθρα από τα “important” topics (πολλαπλές πηγές ή hints)
+  const importantSorted = [...importantTopicGroups].sort((a, b) => {
+    const da = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
+    const db = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
+    return db - da;
+  });
+
+  for (const topic of importantSorted) {
     console.log(
       "Απλοποιώ & συνθέτω για θέμα:",
       topic.title,
@@ -913,117 +859,39 @@ async function run() {
       topic.articles.length
     );
 
-    const result = await simplifyAndClassifyText(topic);
-    if (!result || !result.simplifiedText) continue;
+    const built = await buildFinalArticleFromTopic(topic);
+    usedTopicIds.add(topic.id);
+    if (!built) continue;
 
-    const isSensitive = Boolean(result.isSensitive);
-
-    // Φιλτράρουμε ευαίσθητες ειδήσεις
-    if (isSensitive) {
-      console.log("Παραλείπω ευαίσθητη είδηση:", topic.title);
-      continue;
-    }
-
-    const categoryKey =
-      result.normalizedCategory || normalizeCategory(result.rawCategory);
-
-    if (!TARGET_CATEGORIES.includes(categoryKey)) {
-      console.log(
-        `ℹ️ Παράχθηκε κατηγορία εκτός στόχων (${categoryKey}) – το topic δεν θα μπει στο news.json.`
-      );
-      continue;
-    }
-
-    const primary = topic.articles[0];
-
-    // 🧹 Αφαιρούμε διπλότυπες πηγές (ίδιο όνομα & link)
-    const sourcesMap = new Map();
-    for (const a of topic.articles) {
-      const name = a.sourceName || "Άγνωστη πηγή";
-      const url = a.sourceUrl || "";
-      const key = name + "|" + url;
-      if (!sourcesMap.has(key)) {
-        sourcesMap.set(key, { sourceName: name, sourceUrl: url });
-      }
-    }
-    const sourceLinks = Array.from(sourcesMap.values()).map((s) => ({
-      title: s.sourceName || "Πηγή",
-      url: s.sourceUrl || "",
-    }));
-
-    // Για συμβατότητα με το frontend:
-    // - αν έχουμε μία πηγή → δείχνουμε αυτήν
-    // - αν έχουμε πολλές → ενώνουμε τα ονόματα με κόμμα
-    let mainSourceName = primary.sourceName || "Πηγή";
-    let mainSourceUrl = primary.sourceUrl || "";
-
-    if (sourceLinks.length === 1) {
-      mainSourceName = sourceLinks[0].title;
-      mainSourceUrl = sourceLinks[0].url;
-    } else if (sourceLinks.length > 1) {
-      mainSourceName = sourceLinks
-        .map((s) => s.title)
-        .filter(Boolean)
-        .join(", ");
-      const firstUrl = sourceLinks.find((s) => s.url)?.url || "";
-      mainSourceUrl = firstUrl || primary.sourceUrl || "";
-    }
-
-    const sourceUrls = sourceLinks.map((s) => s.url).filter(Boolean);
-    let sourceDomains = extractSourceDomains(sourceUrls);
-
-    if (!sourceDomains.length && primary.sourceUrl) {
-      sourceDomains = extractSourceDomains([primary.sourceUrl]);
-    }
-
-    if (!sourceDomains.length) {
-      const nameFallbacks = sourceLinks.map((s) => s.title).filter(Boolean);
-      if (nameFallbacks.length) {
-        sourceDomains = [...new Set(nameFallbacks)];
-      }
-    }
-
-    const footer = buildSourcesFooter(sourceDomains);
-    const cleanedText = cleanSimplifiedText(result.simplifiedText || "");
-    const simpleText = cleanedText + footer;
-
-    allArticles.push({
-      id: topic.id,
-      title: topic.title, // αρχικός τίτλος (από το πρώτο άρθρο του θέματος)
-      simpleTitle: result.simplifiedTitle || topic.title,
-      simpleText,
-
-      // "συνοπτική" πηγή για παλιό UI
-      sourceName: mainSourceName,
-      sourceUrl: mainSourceUrl,
-      sourceDomains,
-      // 🆕 Πλήρης λίστα με πηγές (τίτλος + URL) για το UI
-      sources: sourceLinks,
-
-      category: categoryKey, // ✅ μία από τις CATEGORY_KEYS
-      categoryReason: result.categoryReason || "",
-      isSensitive,
-      imageUrl: topic.imageUrl,
-      videoUrl: topic.videoUrl,
-      publishedAt: topic.publishedAt,
-    });
-
-    console.log(`✅ Προστέθηκε άρθρο κατηγορίας ${categoryKey} στο news.json`);
+    allArticles.push(built);
+    console.log(`✅ Προστέθηκε άρθρο κατηγορίας ${built.category} στο news.json`);
   }
 
-  // TODO: σε επόμενο βήμα:
-  // const openDataArticles = await fetchOpenDataArticlesFromTMDBEtc();
-  // allArticles.push(...openDataArticles);
+  // 4️⃣ Dedupe
+  {
+    const deduped = dedupeArticlesByUrlOrTitle(allArticles);
+    allArticles.length = 0;
+    allArticles.push(...deduped);
+  }
 
-  const dedupedArticles = dedupeArticlesByUrlOrTitle(allArticles);
-  allArticles.length = 0;
-  allArticles.push(...dedupedArticles);
+  // 5️⃣ RSS-only backfill: συμπληρώνουμε κατηγορίες από single-source topics (χωρίς web search)
+  await backfillMissingCategoriesFromTopics(allArticles, fallbackTopicGroups, usedTopicIds);
 
-  await backfillMissingCategories(allArticles);
+  // 6️⃣ Dedupe ξανά (σε περίπτωση που το backfill έφερε κάτι πολύ κοντινό)
+  {
+    const deduped = dedupeArticlesByUrlOrTitle(allArticles);
+    allArticles.length = 0;
+    allArticles.push(...deduped);
+  }
 
-  const dedupedAfterBackfill = dedupeArticlesByUrlOrTitle(allArticles);
-  allArticles.length = 0;
-  allArticles.push(...dedupedAfterBackfill);
+  // 7️⃣ Αν μετά το dedupe ξαναλείπει κάτι, κάνε ένα ακόμα πέρασμα backfill (χωρίς να “κάψεις” τα ίδια topics)
+  await backfillMissingCategoriesFromTopics(allArticles, fallbackTopicGroups, usedTopicIds);
+
+  {
+    const deduped = dedupeArticlesByUrlOrTitle(allArticles);
+    allArticles.length = 0;
+    allArticles.push(...deduped);
+  }
 
   const finalArticles = [];
 
@@ -1046,9 +914,7 @@ async function run() {
 
   const payload = {
     generatedAt: new Date().toISOString(),
-    // flat λίστα όλων των άρθρων (αν θες για ιστορικό)
     articles: finalArticles,
-    // και οργανωμένα ανά κατηγορία για την αρχική οθόνη / "ειδήσεις της ημέρας"
     articlesByCategory,
   };
 
@@ -1057,9 +923,7 @@ async function run() {
     "Έγραψα news.json με",
     finalArticles.length,
     "άρθρα συνολικά. Ανά κατηγορία:",
-    Object.fromEntries(
-      Object.entries(articlesByCategory).map(([k, v]) => [k, v.length])
-    )
+    Object.fromEntries(Object.entries(articlesByCategory).map(([k, v]) => [k, v.length]))
   );
 }
 
