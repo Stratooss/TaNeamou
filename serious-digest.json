@@ -1,97 +1,90 @@
 {
-  "generatedAt": "2025-12-13T07:05:31.404Z",
+  "generatedAt": "2025-12-13T10:55:54.202Z",
   "articles": [
     {
-      "id": "ae276d48-f2be-4ddb-bdd1-02b065117be7",
+      "id": "2fb48a0a-eeb0-49e9-bad6-18bfa21df03e",
       "contentType": "agent_serious_digest",
       "topic": "politics_economy",
       "topicLabel": "πολιτική και οικονομική επικαιρότητα",
       "title": "Πολιτική και οικονομική επικαιρότητα σε απλά λόγια",
-      "simpleText": "Μαρινάκης και Αγγελικούση στην Κορυφή της Ναυτιλίας\n\nΟ Βαγγέλης Μαρινάκης και η Μαρία Αγγελικούση είναι ανάμεσα στους κορυφαίους Έλληνες εφοπλιστές για το 2025. Βρέθηκαν σε υψηλές θέσεις στη διεθνή λίστα Lloyd’s List, που αναδεικνύει τις 100 πιο σημαντικές προσωπικότητες στη ναυτιλία παγκοσμίως.\n\nΗ Μαρία Αγγελικούση ανέβηκε στην 8η θέση, χάρη σε σημαντικές συμφωνίες που πέτυχε ο όμιλός της. Ο Βαγγέλης Μαρινάκης κατέλαβε τη 10η θέση, σημειώνοντας άνοδο στη λίστα.\n\nΗ Ελλάδα εκπροσωπείται συνολικά με 17 προσωπικότητες στη λίστα, υπογραμμίζοντας τη σημασία της ελληνικής ναυτιλίας στη διεθνή αγορά.",
+      "simpleText": "### Μείωση Δημόσιου Χρέους στην Ελλάδα\n\nΣύμφωνα με πληροφορίες, το δημόσιο χρέος της Ελλάδας αναμένεται να μειωθεί και να πέσει κάτω από το 140% του Ακαθάριστου Εγχώριου Προϊόντος (ΑΕΠ) μέχρι το 2026. Αυτή η μείωση είναι σημαντική για την οικονομία της χώρας.\n\nΩστόσο, η Ελλάδα εξακολουθεί να πληρώνει υψηλούς τόκους για το χρέος της. Το 2024, η χώρα πλήρωσε τόκους που έφτασαν στο 3,5% του ΑΕΠ. Ο μέσος όρος στην Ευρωζώνη ήταν πολύ χαμηλότερος, στο 1,9%. Αυτό επιβαρύνει την οικονομία της Ελλάδας.\n\nΤο δημόσιο χρέος της Ελλάδας παραμένει το υψηλότερο στην Ευρωπαϊκή Ένωση. Η μείωση του χρέους είναι κρίσιμη για τη σταθερότητα της οικονομίας και απαιτεί προσεκτική διαχείριση των οικονομικών πόρων.\n\nΗ εξέλιξη αυτή μπορεί να φέρει ελπίδα για την οικονομική ανάκαμψη και τη βελτίωση της οικονομικής κατάστασης της χώρας.",
       "sourceDomains": [
-        "tanea.gr",
-        "tovima.gr"
+        "ertnews.gr",
+        "news.gr"
       ],
       "sources": [
         {
-          "title": "TA NEA, TO BHMA",
-          "url": "https://www.tanea.gr/2025/12/13/economy/lloyds-list-marinakis-kai-aggelikousi-stin-koryfi-17-ellines-sto-top-100-tis-pagkosmias-naytilias/"
+          "title": "ERT News",
+          "url": "https://www.ertnews.gr/roi-idiseon/dimosio-xreos-kato-apo-to-orio-tou-140-tou-aep-i-apoklimakosi-to-2026/"
         },
         {
-          "title": "TA NEA, TO BHMA",
-          "url": "https://www.tanea.gr/2025/12/13/economy/lloyds-list-marinakis-kai-aggelikousi-stin-koryfi-17-ellines-sto-top-100-tis-pagkosmias-naytilias/"
-        },
-        {
-          "title": "TA NEA, TO BHMA",
-          "url": "https://www.tovima.gr/2025/12/13/naytilia/lloyds-list-marinakis-kai-aggelikousi-stin-koryfi-17-ellines-sto-top-100-tis-pagkosmias-naytilias/"
+          "title": "News.gr",
+          "url": "https://www.news.gr/oikonomia/article/4030569/kato-apo-to-orio-tou-140-tou-aep-i-apoklimakosi-tou-dimosiou-chreous-to-2026.html"
         }
       ],
-      "mainArticleId": "1da174a8ea46",
+      "mainArticleId": "55ec651c6d3e",
       "relatedArticleIds": [],
-      "createdAt": "2025-12-13T07:05:22.745Z"
+      "createdAt": "2025-12-13T10:55:47.694Z"
     },
     {
-      "id": "118a2677-87b2-4e5f-a1cd-9402465a07e7",
+      "id": "8f3c5fbc-abfa-4515-a888-2bd7f6d83288",
       "contentType": "agent_serious_digest",
       "topic": "social",
       "topicLabel": "κοινωνικά θέματα",
       "title": "Ένα σημαντικό κοινωνικό θέμα σε απλά λόγια",
-      "simpleText": "Ο βασιλιάς Κάρολος λαμβάνει καλά νέα για την υγεία του\n\nΟ βασιλιάς Κάρολος Γ΄ ανακοίνωσε ότι η θεραπεία του για τον καρκίνο θα περιοριστεί τη νέα χρονιά. Η είδηση αυτή είναι ιδιαίτερα θετική για εκείνον και για τους υπηκόους του στο Ηνωμένο Βασίλειο.\n\nΟ 77χρονος βασιλιάς είχε μαθευτεί ότι πάσχει από καρκίνο από τον Φεβρουάριο του προηγούμενου έτους. Δεν έχει αποκαλυφθεί το είδος της ασθένειας, αλλά η κατάσταση φαίνεται να βελτιώνεται.\n\nΗ ανακοίνωση του Καρόλου έγινε μέσω του καναλιού Channel Four. Είναι μέρος μιας καμπάνιας για την ευαισθητοποίηση του κόσμου σχετικά με τον καρκίνο. Ο Κάρολος υπογράμμισε πως η έγκαιρη διάγνωση και οι κατάλληλες ιατρικές οδηγίες συνέβαλαν σημαντικά στην καλή εξέλιξη της υγείας του.\n\nΟι γιατροί επιβεβαιώνουν ότι ο βασιλιάς ανταποκρίνεται καλά στη θεραπεία και σύντομα θα επικεντρωθεί στην πρόληψη.",
-      "sourceDomains": [
-        "tanea.gr",
-        "tovima.gr"
-      ],
-      "sources": [
-        {
-          "title": "TA NEA, TO BHMA",
-          "url": "https://www.tanea.gr/2025/12/12/world/o-vasilias-karolos-anakoinose-tin-anatropi-sti-therapeia-toy-gia-ton-karkino-i-epomeni-ime/"
-        },
-        {
-          "title": "TA NEA, TO BHMA",
-          "url": "https://www.tanea.gr/2025/12/12/world/o-vasilias-karolos-anakoinose-tin-anatropi-sti-therapeia-toy-gia-ton-karkino-i-epomeni-ime/"
-        },
-        {
-          "title": "TA NEA, TO BHMA",
-          "url": "https://www.tovima.gr/2025/12/12/world/vasilias-karolos-to-2026-tha-perioristei-i-therapeia-mou-gia-ton-karkino/"
-        }
-      ],
-      "mainArticleId": "b3c53e2a6cb6",
-      "relatedArticleIds": [],
-      "createdAt": "2025-12-13T07:05:26.640Z"
-    },
-    {
-      "id": "5dd2b8f3-47a6-4241-b9bd-4ca721334c60",
-      "contentType": "agent_serious_digest",
-      "topic": "world",
-      "topicLabel": "παγκόσμια επικαιρότητα",
-      "title": "Παγκόσμια επικαιρότητα σε απλά λόγια",
-      "simpleText": "### Η Αντίδραση της Μόσχας στο Πάγωμα Ρωσικών Περιουσιακών Στοιχείων από την Ε.Ε.\n\nΗ Ευρωπαϊκή Ένωση αποφάσισε να παγώσει ρωσικά περιουσιακά στοιχεία αξίας 210 δισεκατομμυρίων ευρώ, που βρίσκονται κυρίως στη βελγική τράπεζα Euroclear. Σκοπός αυτής της κίνησης είναι να χρησιμοποιηθούν τα κεφάλαια για δάνειο προς την Ουκρανία, ενισχύοντας την οικονομία και τον στρατό της.\n\nΗ Μόσχα αντιδρά έντονα σε αυτή την απόφαση. Η ρωσική κυβέρνηση θα καταφύγει στα δικαστήρια της Μόσχας εναντίον της Euroclear, κατηγορώντας την Ε.Ε. για «κλοπή κρατικών περιουσιακών στοιχείων». Ο πρόεδρος της Ρωσίας, Βλαντιμίρ Πούτιν, εξέφρασε την αγανάκτησή του.\n\nΗ απόφαση αυτή προκάλεσε και αντιδράσεις εντός της Ε.Ε. Κάποιες χώρες, όπως το Βέλγιο, η Ιταλία και η Ουγγαρία, εκφράζουν επιφυλάξεις, και το ζήτημα θα συζητηθεί στην επόμενη σύνοδο κορυφής της Ε.Ε.\n\nΟι σχέσεις μεταξύ Ευρώπης και Ρωσίας έχουν επιδεινωθεί, αυξάνοντας τις εντάσεις στην περιοχή.",
+      "simpleText": "### Καταστροφικές Πλημμύρες στην Ινδονησία\n\nΟι πρόσφατες πλημμύρες στην Ινδονησία έχουν προκαλέσει τεράστιες καταστροφές. Ο αριθμός των νεκρών έχει ξεπεράσει τους 1.000, συγκεκριμένα 1.003 άνθρωποι έχουν χάσει τη ζωή τους. Επιπλέον, 218 άτομα παραμένουν αγνοούμενα. Οι πλημμύρες έπληξαν κυρίως τις επαρχίες Βόρεια Σουμάτρα, Δυτική Σουμάτρα και Άτσεχ πριν από δύο εβδομάδες.\n\nΟι τροπικές καταιγίδες, αποτέλεσμα της εποχής των μουσώνων που είναι συχνές στη νοτιοανατολική Ασία, είναι η αιτία αυτής της καταστροφής. Πολλοί άνθρωποι έχουν τραυματιστεί, ενώ αρκετοί αναγκάζονται να ζουν προσωρινά σε καταφύγια.\n\nΗ κατάσταση είναι κρίσιμη και το κόστος για την ανοικοδόμηση εκτιμάται πως θα φτάσει τα 3,1 δισεκατομμύρια δολάρια. Η κυβέρνηση της Ινδονησίας δέχεται έντονη κριτική γιατί δεν κήρυξε κατάσταση φυσικής καταστροφής, που θα διευκόλυνε τις προσπάθειες διάσωσης.\n\nΟ πρόεδρος της χώρας επισκέφθηκε τις περιοχές που επηρεάστηκαν για να διαπιστώσει προσωπικά την κατάσταση. Οι συνθήκες για τους κατοίκους παραμένουν δύσκολες, καθώς συνεχίζονται οι προσπάθειες ανεύρεσης των αγνοουμένων και η παροχή βοήθειας στους πληγέντες.",
       "sourceDomains": [
         "ertnews.gr",
-        "902.gr",
+        "news.gr",
         "protagon.gr"
       ],
       "sources": [
         {
-          "title": "ERT News, 902.gr – Επιλεγμένα, Protagon",
-          "url": "https://www.ertnews.gr/eidiseis/diethni/i-apantisi-tis-mosxas-sto-ep-aoriston-pagoma-ton-rosikon-periousiakon-stoixeion-apo-tin-e-e/"
+          "title": "ERT News",
+          "url": "https://www.ertnews.gr/eidiseis/oi-nekroi-apo-tis-prosfates-plimmyres-stin-indonisia-kseperasan-tous-1-000/"
         },
         {
-          "title": "ERT News, 902.gr – Επιλεγμένα, Protagon",
-          "url": "https://www.ertnews.gr/eidiseis/diethni/i-apantisi-tis-mosxas-sto-ep-aoriston-pagoma-ton-rosikon-periousiakon-stoixeion-apo-tin-e-e/"
+          "title": "News.gr",
+          "url": "https://www.news.gr/kosmos/article/4030607/indonisia-i-nekri-apo-tis-prosfates-plimmires-xeperasan-tous-1-000.html"
         },
         {
-          "title": "ERT News, 902.gr – Επιλεγμένα, Protagon",
-          "url": "https://www.902.gr/eidisi/kosmos/409619/i-ee-apofasise-ep-aoriston-pagoma-ton-rosikon-perioysiakon-stoiheion"
-        },
-        {
-          "title": "ERT News, 902.gr – Επιλεγμένα, Protagon",
-          "url": "https://www.protagon.gr/epikairotita/ep-aoriston-pagwma-twn-rwsikwn-periousiakwn-stoixeiwn-apo-tin-ee-44343274895"
+          "title": "Protagon",
+          "url": "https://www.protagon.gr/epikairotita/indonisia-oi-nekroi-apo-tis-prosfates-plimmyres-kseperasan-tous-1-000-44343275007"
         }
       ],
-      "mainArticleId": "685b466ee4de",
+      "mainArticleId": "739e1efa5ad6",
       "relatedArticleIds": [],
-      "createdAt": "2025-12-13T07:05:31.404Z"
+      "createdAt": "2025-12-13T10:55:51.624Z"
+    },
+    {
+      "id": "257f78d8-6600-42f3-8bac-80891e43f4a7",
+      "contentType": "agent_serious_digest",
+      "topic": "world",
+      "topicLabel": "παγκόσμια επικαιρότητα",
+      "title": "Παγκόσμια επικαιρότητα σε απλά λόγια",
+      "simpleText": "Ιράν: Συλλήψεις ναυτικών σε τάνκερ με λαθραίο καύσιμο\n\nΟι αρχές του Ιράν συνέλαβαν 18 ναυτικούς, μέλη του πληρώματος ενός πετρελαιοφόρου, στον κόλπο του Ομάν. Το πλοίο κατηγορείται για μεταφορά 6 εκατομμυρίων λίτρων λαθραίου καυσίμου.\n\nΤο περιστατικό συνέβη την Παρασκευή. Αν και οι εθνικότητες των ναυτικών δεν έχουν επιβεβαιωθεί, πιστεύεται ότι προέρχονται από την Ινδία, τη Σρι Λάνκα και το Μπανγκλαντές.\n\nΣημαντικό να αναφέρουμε ότι το Ιράν συχνά αντιμετωπίζει προβλήματα με λαθρεμπόριο καυσίμων. Αυτό συμβαίνει επειδή οι τιμές καυσίμων στη χώρα είναι χαμηλές, γεγονός που προσελκύει παράνομες δραστηριότητες.",
+      "sourceDomains": [
+        "ertnews.gr",
+        "kathimerini.gr",
+        "news.gr"
+      ],
+      "sources": [
+        {
+          "title": "ERT News",
+          "url": "https://www.ertnews.gr/roi-idiseon/iran-ypo-kratisi-oi-18-naytikoi-tou-pliromatos-tou-tanker-pou-katasxethike-ston-kolpo-tou-oman/"
+        },
+        {
+          "title": "Kathimerini",
+          "url": "https://www.kathimerini.gr/world/563975059/iran-nea-kataschesi-tanker-ypo-kratisi-ta-meli-toy-pliromatos/"
+        },
+        {
+          "title": "News.gr",
+          "url": "https://www.news.gr/kosmos/article/4030474/ipo-kratisi-tethikan-ta-18-meli-tou-pliromatos-tou-tanker-pou-sinelifthi-chthes-ston-kolpo-tou-oman.html"
+        }
+      ],
+      "mainArticleId": "778af375fe17",
+      "relatedArticleIds": [],
+      "createdAt": "2025-12-13T10:55:54.202Z"
     }
   ]
 }
