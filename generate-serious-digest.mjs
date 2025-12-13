@@ -1,6 +1,7 @@
 import fs from "fs/promises";
 import crypto from "crypto";
 import { openai } from "./llm/openaiClient.js";
+
 import {
   SERIOUS_TOPICS_SYSTEM_PROMPT,
   SERIOUS_DIGEST_SYSTEM_PROMPT,
@@ -25,6 +26,10 @@ const SERIOUS_TOPIC_LABELS = {
 
 // Πόσα θέματα (max) θα εξετάζουμε ανά θεματική πριν διαλέξουμε το καλύτερο mainArticle
 const MAX_ITEMS_PER_TOPIC = 6;
+
+const PIXABAY_ALLOWED_PATH_PREFIXES = ["/get/", "/photos/"];
+const PIXABAY_ALLOWED_HOSTS = new Set(["pixabay.com", "cdn.pixabay.com"]);
+const HTTPS_URL_REGEX = /^https?:\/\//i;
 
 // ---------- Helpers ----------
 
@@ -143,6 +148,24 @@ function scoreSeriousArticle(article) {
   const sourcesCount = Array.isArray(article.sources) ? article.sources.length : 1;
   const timeMs = article.publishedAt ? new Date(article.publishedAt).getTime() : 0;
   return sourcesCount * 1_000_000_000_000 + timeMs;
+}
+
+// ✅ allowlist: ΜΟΝΟ Pixabay images (όχι RSS/original άρθρα)
+function isPixabayUrl(url) {
+  if (!url || typeof url !== "string") return false;
+  const normalized = url.trim();
+  if (!HTTPS_URL_REGEX.test(normalized)) return false;
+  let u;
+  try {
+    u = new URL(normalized);
+  } catch {
+    return false;
+  }
+  const host = u.hostname.toLowerCase();
+  const path = u.pathname.toLowerCase();
+  if (!PIXABAY_ALLOWED_HOSTS.has(host)) return false;
+  if (host === "cdn.pixabay.com") return true;
+  return PIXABAY_ALLOWED_PATH_PREFIXES.some((p) => path.startsWith(p));
 }
 
 // Διαβάζει JSON αν υπάρχει (για "κρατάω το προηγούμενο")
@@ -323,6 +346,11 @@ ${JSON.stringify(payload, null, 2)}
     max_output_tokens: 1600,
   });
 
+  // ✅ Κρατάμε ΜΟΝΟ Pixabay εικόνα (αν υπάρχει στο mainArticle)
+  const digestImageUrl = isPixabayUrl(mainArticle?.imageUrl)
+    ? mainArticle.imageUrl
+    : null;
+
   let simpleText = extractTextFromResponse(response).trim();
   simpleText = stripSourcesAndInlineLinks(simpleText);
   simpleText = cleanSimplifiedText(simpleText);
@@ -349,6 +377,7 @@ ${JSON.stringify(payload, null, 2)}
     sourceDomains,
     sources,
     mainArticleId: mainArticle.id,
+    imageUrl: digestImageUrl,
     relatedArticleIds: [],
     createdAt: new Date().toISOString(),
   };
@@ -453,4 +482,3 @@ main().catch((err) => {
   console.error("❌ Σφάλμα στο generate-serious-digest:", err);
   process.exit(1);
 });
-
