@@ -1,19 +1,23 @@
 name: Fetch and simplify news
 
 on:
-  workflow_dispatch:   # να μπορείς να το τρέχεις με το χέρι
+  workflow_dispatch: # να μπορείς να το τρέχεις με το χέρι
   schedule:
-    - cron: "0 7 * * *"   # 09:00 ώρα Ελλάδας (χειμώνα)
-    - cron: "0 15 * * *"  # 17:00 ώρα Ελλάδας (χειμώνα)
+    - cron: "0 7 * * *" # 09:00 ώρα Ελλάδας (χειμώνα)
+    - cron: "0 15 * * *" # 17:00 ώρα Ελλάδας (χειμώνα)
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write   # για να μπορεί να κάνει commit τα json
+      contents: write # για να μπορεί να κάνει commit τα json
     env:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+      ENABLE_PIXABAY_IMAGES: "true"
+      MAX_PIXABAY_CALLS: "25"
+      IMAGE_SCORE_THRESHOLD: "3"
+      # DEBUG_IMAGES: "true" # (προαιρετικό) για logs στο imageResolver
 
     steps:
       - name: Checkout repo
@@ -28,19 +32,13 @@ jobs:
         run: npm install openai rss-parser
 
       - name: Run fetch script (news.json)
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: node fetch-news.mjs
 
       - name: Generate serious digest (serious-digest.json)
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: node generate-serious-digest.mjs
 
       - name: Generate lifestyle articles (lifestyle.json)
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: node generate-lifestyle.mjs   # <- πρόσεξε το όνομα εδώ
+        run: node generate-lifestyle.mjs # <- πρόσεξε το όνομα εδώ
 
       - name: Commit and push JSON files
         run: |
@@ -50,3 +48,4 @@ jobs:
           git diff --cached --quiet && echo "No changes" && exit 0
           git commit -m "Update news, serious digest & lifestyle JSON"
           git push
+
