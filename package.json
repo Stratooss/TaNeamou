@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "dependencies": {
     "openai": "^4.76.0",
     "rss-parser": "^3.13.0"
