@@ -247,7 +247,7 @@
       <article class="article-main-card">
         <h1 id="article-title" class="article-main-title">Φορτώνω το άρθρο…</h1>
 
-        <!-- Εικόνα άρθρου από news.json (όχι για lifestyle) -->
+        <!-- Εικόνα άρθρου (ΜΟΝΟ αν είναι Pixabay) -->
         <div id="article-image-wrapper" class="article-image-wrapper" style="display:none;">
           <img
             id="article-image"
@@ -294,6 +294,40 @@
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#39;");
+    }
+
+    // ✅ Allowlist: δεχόμαστε ΜΟΝΟ Pixabay URLs
+    function isPixabayUrl(url) {
+      return /(^|\/\/)(cdn\.)?pixabay\.com/i.test(String(url || ""));
+    }
+
+    // Κεντρικός helper για εικόνα (με onerror hide)
+    function setArticleImage(imageWrapper, imageEl, imageUrl, altText) {
+      if (!imageWrapper || !imageEl) return;
+
+      const url = (imageUrl || "").trim();
+      const ok = url && isPixabayUrl(url);
+
+      if (!ok) {
+        imageEl.removeAttribute("src");
+        imageEl.alt = "";
+        imageEl.style.display = "none";
+        imageWrapper.style.display = "none";
+        imageEl.onerror = null;
+        return;
+      }
+
+      imageEl.onerror = () => {
+        imageEl.removeAttribute("src");
+        imageEl.alt = "";
+        imageEl.style.display = "none";
+        imageWrapper.style.display = "none";
+      };
+
+      imageEl.src = url;
+      imageEl.alt = altText || "Εικόνα άρθρου";
+      imageEl.style.display = "block";
+      imageWrapper.style.display = "block";
     }
 
     // Αφαιρούμε ενότητα "Πηγές:" που μπορεί να έχει γράψει το LLM
@@ -591,19 +625,8 @@
         videoContainer.innerHTML = "";
       }
 
-      if (imageWrapper && imageEl) {
-        if (article.imageUrl) {
-          imageEl.src = article.imageUrl;
-          imageEl.alt = displayTitle || "Εικόνα άρθρου";
-          imageEl.style.display = "block";
-          imageWrapper.style.display = "block";
-        } else {
-          imageEl.removeAttribute("src");
-          imageEl.alt = "";
-          imageEl.style.display = "none";
-          imageWrapper.style.display = "none";
-        }
-      }
+      // ✅ Εικόνα ΜΟΝΟ αν είναι Pixabay
+      setArticleImage(imageWrapper, imageEl, article.imageUrl || "", displayTitle);
 
       if (videoWrapper && videoContainer) {
         if (article.videoUrl) {
@@ -743,6 +766,7 @@
           bodyEl.textContent = "Προσπάθησε ξανά σε λίγο, δεν υπάρχει διαθέσιμο άρθρο.";
           listenBtn.disabled = true;
           sourceEl.innerHTML = "";
+          setArticleImage(imageWrapper, imageEl, null, "");
           return;
         }
 
@@ -772,34 +796,31 @@
       titleEl,
       bodyEl,
       sourceEl,
+      imageWrapper,
+      imageEl,
       listenBtn,
     }) {
       try {
-        const digestRes = await fetch(
-          "serious-digest.json?cachebust=" + Date.now()
-        );
+        const digestRes = await fetch("serious-digest.json?cachebust=" + Date.now());
         if (!digestRes.ok) {
           throw new Error("HTTP " + digestRes.status);
         }
         const digestData = await digestRes.json();
-        const digestArticles = Array.isArray(digestData.articles)
-          ? digestData.articles
-          : [];
+        const digestArticles = Array.isArray(digestData.articles) ? digestData.articles : [];
 
         if (!digestArticles.length) {
           titleEl.textContent = "Δεν βρέθηκαν σοβαρές ειδήσεις";
           bodyEl.textContent =
             "Δεν υπάρχει διαθέσιμο άρθρο σοβαρής επικαιρότητας αυτή τη στιγμή.";
           listenBtn.disabled = true;
+          setArticleImage(imageWrapper, imageEl, null, "");
           return;
         }
 
         let article = null;
 
         if (idParam) {
-          article = digestArticles.find(
-            (a) => String(a.id) === String(idParam)
-          );
+          article = digestArticles.find((a) => String(a.id) === String(idParam));
         }
         if (!article && topicParam) {
           article = digestArticles.find((a) => a.topic === topicParam);
@@ -819,6 +840,11 @@
         titleEl.textContent = displayTitle;
         bodyEl.innerHTML = cleaned.replace(/\n/g, "<br/>");
 
+        // ✅ Εικόνα για serious digest:
+        // 1) αν το serious-digest έχει imageUrl (Pixabay) το δείχνουμε
+        // 2) αλλιώς fallback στο news.json με mainArticleId (Pixabay)
+        let chosenImageUrl = isPixabayUrl(article.imageUrl) ? article.imageUrl : null;
+
         const digestHasSources = Array.isArray(article.sources)
           ? article.sources.length > 0
           : false;
@@ -830,14 +856,17 @@
             const newsRes = await fetch("news.json?cachebust=" + Date.now());
             if (newsRes.ok) {
               const newsData = await newsRes.json();
-              const allNews = Array.isArray(newsData.articles)
-                ? newsData.articles
-                : [];
+              const allNews = Array.isArray(newsData.articles) ? newsData.articles : [];
               const mainSourceArticle = allNews.find(
                 (a) => String(a.id) === String(article.mainArticleId)
               );
+
               if (mainSourceArticle) {
                 renderSourcesSection(sourceEl, mainSourceArticle, null);
+
+                if (!chosenImageUrl && isPixabayUrl(mainSourceArticle.imageUrl)) {
+                  chosenImageUrl = mainSourceArticle.imageUrl;
+                }
               } else {
                 renderSourcesSection(
                   sourceEl,
@@ -868,17 +897,17 @@
           );
         }
 
-        document.title = displayTitle + " - Εύκολα Νέα";
+        setArticleImage(imageWrapper, imageEl, chosenImageUrl, displayTitle);
 
-        // 🎧 setup play / pause / resume
+        document.title = displayTitle + " - Εύκολα Νέα";
         setupTtsButton(listenBtn, displayTitle, cleaned);
       } catch (err) {
         console.error(err);
         titleEl.textContent = "Προέκυψε σφάλμα";
         bodyEl.textContent =
-          "Δεν μπόρεσα να φορτώσω το άρθρο σοβαρής επικαιρότητας: " +
-          err.message;
+          "Δεν μπόρεσα να φορτώσω το άρθρο σοβαρής επικαιρότητας: " + err.message;
         listenBtn.disabled = true;
+        setArticleImage(imageWrapper, imageEl, null, "");
       }
     }
 
@@ -888,6 +917,8 @@
       titleEl,
       bodyEl,
       sourceEl,
+      imageWrapper,
+      imageEl,
       listenBtn,
     }) {
       if (!categoryParam) {
@@ -895,6 +926,7 @@
         bodyEl.textContent =
           "Λείπει η πληροφορία για το είδος της lifestyle κατηγορίας.";
         listenBtn.disabled = true;
+        setArticleImage(imageWrapper, imageEl, null, "");
         return;
       }
 
@@ -912,9 +944,9 @@
 
         if (!list.length) {
           titleEl.textContent = "Δεν βρέθηκαν lifestyle ειδήσεις";
-          bodyEl.textContent =
-            "Δεν υπάρχει διαθέσιμο lifestyle άρθρο αυτή τη στιγμή.";
+          bodyEl.textContent = "Δεν υπάρχει διαθέσιμο lifestyle άρθρο αυτή τη στιγμή.";
           listenBtn.disabled = true;
+          setArticleImage(imageWrapper, imageEl, null, "");
           return;
         }
 
@@ -923,10 +955,10 @@
 
         if (!article) {
           titleEl.textContent = "Δεν βρέθηκε άρθρο για αυτή την κατηγορία";
-          bodyEl.textContent =
-            "Σήμερα δεν υπάρχει lifestyle άρθρο για αυτή την κατηγορία.";
+          bodyEl.textContent = "Σήμερα δεν υπάρχει lifestyle άρθρο για αυτή την κατηγορία.";
           listenBtn.disabled = true;
           sourceEl.innerHTML = "";
+          setArticleImage(imageWrapper, imageEl, null, "");
           return;
         }
 
@@ -936,19 +968,41 @@
         titleEl.textContent = displayTitle;
         bodyEl.innerHTML = cleaned.replace(/\n/g, "<br/>");
 
-        // Πηγές στο τέλος (από το lifestyle.json)
         renderSourcesSection(sourceEl, article, null);
 
-        document.title = displayTitle + " - Εύκολα Νέα";
+        // ✅ Εικόνα για lifestyle:
+        // 1) αν το lifestyle.json έχει imageUrl (Pixabay) το δείχνουμε
+        // 2) αλλιώς (αν υπάρχει mainArticleId) fallback στο news.json
+        let chosenImageUrl = isPixabayUrl(article.imageUrl) ? article.imageUrl : null;
 
-        // 🎧 setup play / pause / resume
+        if (!chosenImageUrl && article.mainArticleId) {
+          try {
+            const newsRes = await fetch("news.json?cachebust=" + Date.now());
+            if (newsRes.ok) {
+              const newsData = await newsRes.json();
+              const allNews = Array.isArray(newsData.articles) ? newsData.articles : [];
+              const mainSourceArticle = allNews.find(
+                (a) => String(a.id) === String(article.mainArticleId)
+              );
+              if (mainSourceArticle && isPixabayUrl(mainSourceArticle.imageUrl)) {
+                chosenImageUrl = mainSourceArticle.imageUrl;
+              }
+            }
+          } catch (e) {
+            console.error("Σφάλμα φόρτωσης news.json για image fallback (lifestyle):", e);
+          }
+        }
+
+        setArticleImage(imageWrapper, imageEl, chosenImageUrl, displayTitle);
+
+        document.title = displayTitle + " - Εύκολα Νέα";
         setupTtsButton(listenBtn, displayTitle, cleaned);
       } catch (err) {
         console.error("Σφάλμα φόρτωσης lifestyle.json:", err);
         titleEl.textContent = "Προέκυψε σφάλμα";
-        bodyEl.textContent =
-          "Δεν μπόρεσα να φορτώσω το lifestyle άρθρο: " + err.message;
+        bodyEl.textContent = "Δεν μπόρεσα να φορτώσω το lifestyle άρθρο: " + err.message;
         listenBtn.disabled = true;
+        setArticleImage(imageWrapper, imageEl, null, "");
       }
     }
 
@@ -969,6 +1023,8 @@
           titleEl,
           bodyEl,
           sourceEl,
+          imageWrapper,
+          imageEl,
           listenBtn,
         });
       } else if (sourceParam === "lifestyle") {
@@ -977,6 +1033,8 @@
           titleEl,
           bodyEl,
           sourceEl,
+          imageWrapper,
+          imageEl,
           listenBtn,
         });
       } else if (sourceParam && sourceParam !== "news" && !idParam) {
