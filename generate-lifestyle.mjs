@@ -2,15 +2,9 @@ import fs from "fs/promises";
 import crypto from "crypto";
 import { openai } from "./llm/openaiClient.js";
 import { LIFESTYLE_AGENT_SYSTEM_PROMPT } from "./llm/lifestyleAgentPrompts.js";
-import { WEB_SEARCH_NEWS_INSTRUCTIONS } from "./newsLlmInstructions.js";
 import {
   cleanSimplifiedText,
   extractSourceDomains,
-  getWebSearchDateContext,
-  extractWebSearchSources,
-  buildSearchQuery,
-  filterSearchResults,
-  rankAndDedupe,
   extractHostname,
 } from "./llm/textUtils.js";
 
@@ -26,9 +20,7 @@ const LIFESTYLE_PATH = new URL("./lifestyle.json", import.meta.url);
 
 // Helper: βγάζουμε text από το Responses API
 function extractTextFromResponse(response) {
-  if (typeof response.output_text === "string") {
-    return response.output_text;
-  }
+  if (typeof response.output_text === "string") return response.output_text;
 
   const first = response.output?.[0]?.content?.[0]?.text;
   if (typeof first === "string") return first;
@@ -42,14 +34,80 @@ function extractTextFromResponse(response) {
 function stripSourcesAndInlineLinks(text) {
   if (!text) return "";
 
-  // Κρατάμε μόνο το κομμάτι πριν από οποιαδήποτε γραμμή που ξεκινά με "Πηγές:"
   const idx = text.search(/(^|\n)Πηγές:/);
   let body = idx === -1 ? text : text.slice(0, idx);
 
-  // Αφαιρούμε inline markdown links [κείμενο](http...)
   body = body.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, "$1");
 
   return body.trimEnd();
+}
+
+function normalizeUrl(u) {
+  if (!u) return "";
+  if (/^https?:\/\//i.test(u)) return u;
+  return `https://${u}`;
+}
+
+function collectSourceUrls(article) {
+  if (!article) return [];
+  const urls = [];
+
+  if (article.sourceUrl) urls.push(article.sourceUrl);
+  if (article.url) urls.push(article.url);
+
+  if (Array.isArray(article.sources)) {
+    for (const s of article.sources) {
+      if (typeof s === "string") {
+        urls.push(normalizeUrl(s));
+        continue;
+      }
+      const u = s?.sourceUrl || s?.url;
+      if (u) urls.push(normalizeUrl(u));
+    }
+  }
+
+  return urls.filter(Boolean);
+}
+
+// Πηγές ΜΟΝΟ από RSS mainItem
+function buildSourcesFromMainItem(mainItem, { max = 4 } = {}) {
+  if (!mainItem) return { sources: [], sourceDomains: [] };
+
+  /** @type {{title: string, url: string}[]} */
+  const out = [];
+  const seen = new Set();
+
+  // 1) structured sources
+  if (Array.isArray(mainItem.sources) && mainItem.sources.length) {
+    for (const s of mainItem.sources) {
+      const title = s?.title || s?.sourceName || mainItem.sourceName || "Πηγή";
+      const url = normalizeUrl(s?.url || s?.sourceUrl || "");
+      if (!url) continue;
+      if (seen.has(url)) continue;
+      seen.add(url);
+      out.push({ title, url });
+      if (out.length >= max) break;
+    }
+  }
+
+  // 2) fallback url fields
+  if (out.length < max) {
+    const fallbackUrls = collectSourceUrls(mainItem);
+    for (const urlRaw of fallbackUrls) {
+      const url = normalizeUrl(urlRaw);
+      if (!url) continue;
+      if (seen.has(url)) continue;
+      seen.add(url);
+      out.push({
+        title: mainItem.sourceName || extractHostname(url) || "Πηγή",
+        url,
+      });
+      if (out.length >= max) break;
+    }
+  }
+
+  const sourceDomains = extractSourceDomains(out.map((s) => s.url).filter(Boolean));
+  return { sources: out, sourceDomains };
 }
 
 // Τίτλοι ανά κατηγορία για το lifestyle άρθρο
@@ -70,13 +128,8 @@ function lifestyleTitleForCategory(category) {
 
 // Βαθμολογία: πόσα sites (sources.length) + πόσο πρόσφατο
 function scoreLifestyleArticle(article) {
-  const sourcesCount = Array.isArray(article.sources)
-    ? article.sources.length
-    : 1;
-  const timeMs = article.publishedAt
-    ? new Date(article.publishedAt).getTime()
-    : 0;
-  // Δίνουμε πολύ μεγαλύτερο βάρος στα sites, μετά την ημερομηνία
+  const sourcesCount = Array.isArray(article.sources) ? article.sources.length : 1;
+  const timeMs = article.publishedAt ? new Date(article.publishedAt).getTime() : 0;
   return sourcesCount * 1_000_000_000_000 + timeMs;
 }
 
@@ -84,72 +137,76 @@ function scoreLifestyleArticle(article) {
 function groupLifestyleArticlesByCategory(allArticles) {
   /** @type {Record<string, any[]>} */
   const grouped = {};
-  for (const cat of LIFESTYLE_CATEGORIES) {
-    grouped[cat] = [];
-  }
+  for (const cat of LIFESTYLE_CATEGORIES) grouped[cat] = [];
 
   for (const article of allArticles) {
     const cat = article.category;
     if (!LIFESTYLE_CATEGORIES.includes(cat)) continue;
     if (article.isSensitive) continue;
-
     grouped[cat].push(article);
   }
 
-  // Sort & limit ανά κατηγορία
   for (const cat of LIFESTYLE_CATEGORIES) {
     const items = grouped[cat];
-
     items.sort((a, b) => scoreLifestyleArticle(b) - scoreLifestyleArticle(a));
-
     grouped[cat] = items.slice(0, MAX_ITEMS_PER_CATEGORY);
   }
 
   return grouped;
 }
 
-// Κλήση στο OpenAI για μία κατηγορία (με web search) – με mainItem όπως στο serious
+// Κλήση στο OpenAI για μία κατηγορία (RSS-only, χωρίς web search)
 async function generateLifestyleArticleForCategory(category, items) {
   const today = new Date().toISOString().slice(0, 10);
+  const title = lifestyleTitleForCategory(category);
 
-  let payload;
-  let userContent;
+  // Αν δεν υπάρχει τίποτα από RSS: safe placeholder, χωρίς LLM (μηδέν hallucination risk)
+  if (!items || items.length === 0) {
+    const simpleText = cleanSimplifiedText(
+      `Σήμερα δεν βρέθηκαν κατάλληλες ειδήσεις για την κατηγορία "${category}" από τις πηγές RSS που χρησιμοποιούμε.
+Μπορείς να ξαναδοκιμάσεις αργότερα μέσα στην ημέρα.`
+    );
 
-  const dateCtx = getWebSearchDateContext();
-  const categoryKey = category;
-
-  if (items.length > 0) {
-    // 👉 Τα items είναι ήδη ταξινομημένα με scoreLifestyleArticle
-    const [mainItem, ...restItems] = items;
-
-    payload = {
-      date: today,
+    return {
+      id: crypto.randomUUID(),
+      contentType: "agent_lifestyle",
       category,
-      mainItem: {
-        id: mainItem.id,
-        title: mainItem.simpleTitle || mainItem.title,
-        summary: mainItem.simpleText || "",
-        sourceName: mainItem.sourceName || null,
-        sourceUrl: mainItem.sourceUrl || null,
-        sourcesCount: Array.isArray(mainItem.sources)
-          ? mainItem.sources.length
-          : 1,
-        publishedAt: mainItem.publishedAt || null,
-      },
-      contextItems: restItems.map((a) => ({
-        id: a.id,
-        title: a.simpleTitle || a.title,
-        summary: a.simpleText || "",
-        sourceName: a.sourceName || null,
-        sourceUrl: a.sourceUrl || null,
-        sourcesCount: Array.isArray(a.sources) ? a.sources.length : 1,
-        publishedAt: a.publishedAt || null,
-      })),
+      date: today,
+      title,
+      simpleText,
+      sourceDomains: [],
+      sources: [],
+      createdAt: new Date().toISOString(),
     };
+  }
 
-    userContent = `
+  // 👉 mainItem είναι το #1 (είναι ήδη ταξινομημένα)
+  const [mainItem, ...restItems] = items;
 
+  const payload = {
+    date: today,
+    category,
+    mainItem: {
+      id: mainItem.id,
+      title: mainItem.simpleTitle || mainItem.title,
+      summary: mainItem.simpleText || "",
+      sourceName: mainItem.sourceName || null,
+      sourceUrl: mainItem.sourceUrl || null,
+      sourcesCount: Array.isArray(mainItem.sources) ? mainItem.sources.length : 1,
+      publishedAt: mainItem.publishedAt || null,
+    },
+    contextItems: restItems.map((a) => ({
+      id: a.id,
+      title: a.simpleTitle || a.title,
+      summary: a.simpleText || "",
+      sourceName: a.sourceName || null,
+      sourceUrl: a.sourceUrl || null,
+      sourcesCount: Array.isArray(a.sources) ? a.sources.length : 1,
+      publishedAt: a.publishedAt || null,
+    })),
+  };
 
+  const userContent = `
 Κατηγορία (lifestyle): ${category}
 Ημερομηνία: ${today}
 
@@ -172,142 +229,41 @@ async function generateLifestyleArticleForCategory(category, items) {
 Δεδομένα (JSON):
 ${JSON.stringify(payload, null, 2)}
 `;
-  } else {
-    // Fallback: δεν έχουμε καθόλου items από τα RSS για αυτή την κατηγορία
-    payload = {
-      date: today,
-      category,
-      mainItem: null,
-      contextItems: [],
-    };
-
-    userContent = `
-
-
-Κατηγορία (lifestyle): ${categoryKey}
-Ημερομηνία αναφοράς: ${dateCtx.todayLabel}
-Χθες: ${dateCtx.yesterdayLabel}
-Αύριο: ${dateCtx.tomorrowLabel}
-
-Δεν βρέθηκαν καθόλου άρθρα για αυτή την κατηγορία στα δικά μας RSS feeds.
-
-Θέλω:
-
-- Να χρησιμοποιήσεις ΜΟΝΟ web search (εργαλείο web_search_preview)
-  για να βρεις ΕΝΑ σημαντικό γεγονός της ημέρας που ταιριάζει στην κατηγορία "${categoryKey}".
-- Να γράψεις ΕΝΑ μικρό άρθρο σε πολύ απλά ελληνικά, σύμφωνα με τις οδηγίες του system prompt.
-- Να ΜΗΝ εφεύρεις γεγονότα.
-- Να ΜΗΝ γράφεις πηγές, links ή ονόματα ιστοσελίδων μέσα στο κείμενο.
-
-Μπορείς να χρησιμοποιήσεις το παρακάτω JSON μόνο σαν metadata:
-${JSON.stringify(payload, null, 2)}
-`;
-
-    console.log(`ℹ️ Fallback με web search για κατηγορία ${category}`);
-  }
 
   const response = await openai.responses.create({
     model: "gpt-4o",
-    instructions:
-      items.length > 0
-        ? LIFESTYLE_AGENT_SYSTEM_PROMPT
-        : WEB_SEARCH_NEWS_INSTRUCTIONS,
-    tools: [{ type: "web_search_preview" }],
+    instructions: LIFESTYLE_AGENT_SYSTEM_PROMPT,
     input: userContent,
     max_output_tokens: 1600,
   });
 
   let rawText = extractTextFromResponse(response).trim();
   rawText = stripSourcesAndInlineLinks(rawText);
-  const cleaned = cleanSimplifiedText(rawText);
-  const webSourcesRaw = extractWebSearchSources(response);
-  const itemSources = items.map((item) => ({
-    title: item.sourceName || "Πηγή",
-    url: item.sourceUrl || item.url || "",
-  }));
+  const simpleText = cleanSimplifiedText(rawText);
 
-  const primaryItem = items[0] || null;
-  const contextArticle = primaryItem || {
-    title: cleaned.split(/\n+/).find((l) => l.trim()) ||
-      lifestyleTitleForCategory(category),
-    summary: cleaned,
-    publishedAt: today,
-  };
+  // Πηγές ΜΟΝΟ από mainItem (RSS)
+  const { sources, sourceDomains } = buildSourcesFromMainItem(mainItem, { max: 4 });
 
-  const { query, entities, eventDate } = buildSearchQuery(contextArticle);
-
-  const candidates = [...webSourcesRaw, ...itemSources];
-  const { accepted, rejected } = filterSearchResults(
-    candidates,
-    entities,
-    eventDate,
-    { blocklist: ["inside track", "opinion", "column", "gallery"] }
-  );
-
-  const ranked = rankAndDedupe(accepted, {
-    whitelistDomains: [
-      "ertnews.gr",
-      "sport24.gr",
-      "gazzetta.gr",
-      "in.gr",
-      "tanea.gr",
-      "kathimerini.gr",
-      "cnn.gr",
-      "uefa.com",
-    ],
-    max: 4,
-  });
-
-  let finalSources = ranked;
-
-  if (!finalSources.length && primaryItem) {
-    finalSources = itemSources.slice(0, 4).map((s) => ({
-      ...s,
-      title: s.title || extractHostname(s.url) || "Πηγή",
-    }));
-  }
-
-  if (!finalSources.length && items.length === 0) {
-    finalSources = webSourcesRaw.slice(0, 4);
-  }
-
-  const sourceDomains = extractSourceDomains(
-    finalSources.map((s) => s.url).filter(Boolean)
-  );
-
-  const reasonCounts = rejected.reduce((acc, r) => {
-    acc[r.reason] = (acc[r.reason] || 0) + 1;
-    return acc;
-  }, {});
-
-  const finalHosts = finalSources
+  const hosts = sources
     .map((s) => extractHostname(s.url))
     .filter(Boolean)
     .join(", ");
 
   console.log(
-    `🧭 sources lifestyle:${category} | query="${query}" | total=${candidates.length} accepted=${accepted.length} rejected=${rejected.length} reasons=${JSON.stringify(
-      reasonCounts
-    )} final_hosts=${finalHosts}`
+    `🧭 sources lifestyle:${category} | rss_sources=${sources.length} hosts=${hosts}`
   );
 
-  // Δεν προσθέτουμε footer "Πηγές:" στο κείμενο.
-  // Οι πηγές θα εμφανιστούν από το UI, χρησιμοποιώντας το πεδίο `sources`.
-  const simpleText = cleaned;
-
-  const article = {
+  return {
     id: crypto.randomUUID(),
     contentType: "agent_lifestyle",
     category,
     date: today,
-    title: lifestyleTitleForCategory(category),
+    title,
     simpleText,
     sourceDomains,
-    sources: finalSources,
+    sources,
     createdAt: new Date().toISOString(),
   };
-
-  return article;
 }
 
 async function main() {
@@ -335,11 +291,13 @@ async function main() {
   for (const category of LIFESTYLE_CATEGORIES) {
     const items = grouped[category] || [];
     const count = items.length;
-    const prefix =
+
+    console.log(
       count > 0
-        ? `🧠 Δημιουργία lifestyle άρθρου (με web search) για "${category}" με ${count} items...`
-        : `🧠 Δημιουργία lifestyle άρθρου (fallback web search) για "${category}" χωρίς RSS items...`;
-    console.log(prefix);
+        ? `🧠 Δημιουργία lifestyle άρθρου (RSS-only) για "${category}" με ${count} items...`
+        : `ℹ️ Δεν υπάρχουν RSS items για "${category}" (RSS-only placeholder).`
+    );
+
     const article = await generateLifestyleArticleForCategory(category, items);
     if (article) lifestyleArticles.push(article);
   }
@@ -354,11 +312,7 @@ async function main() {
     articles: lifestyleArticles,
   };
 
-  await fs.writeFile(
-    LIFESTYLE_PATH,
-    JSON.stringify(output, null, 2),
-    "utf-8"
-  );
+  await fs.writeFile(LIFESTYLE_PATH, JSON.stringify(output, null, 2), "utf-8");
 
   console.log(
     `✅ lifestyle.json έτοιμο. Κατηγορίες: ${lifestyleArticles
