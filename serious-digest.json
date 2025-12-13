@@ -1,43 +1,43 @@
 {
-  "generatedAt": "2025-12-13T12:41:02.520Z",
+  "generatedAt": "2025-12-13T14:06:32.981Z",
   "articles": [
     {
-      "id": "43f81319-5d2e-4071-a3db-ed1ce06b6376",
+      "id": "d5360cca-cb7a-4135-8ac8-f679e824bcc8",
       "contentType": "agent_serious_digest",
       "topic": "politics_economy",
       "topicLabel": "πολιτική και οικονομική επικαιρότητα",
       "title": "Πολιτική και οικονομική επικαιρότητα σε απλά λόγια",
-      "simpleText": "Μητσοτάκης: Νέος προϋπολογισμός για την Ελλάδα\n\nΟ πρωθυπουργός της Ελλάδας, Κυριάκος Μητσοτάκης, ανακοίνωσε έναν νέο προϋπολογισμό. Μίλησε για αυτόν σε μια συνάντηση που έγινε στο ΟΑΚΑ. Ο Μητσοτάκης υποστήριξε ότι ο νέος προϋπολογισμός θα κάνει την ελληνική οικονομία πιο δυνατή.\n\nΣύμφωνα με τον πρωθυπουργό, τα οικονομικά οφέλη από αυτόν τον προϋπολογισμό θα φτάσουν σε όλους τους πολίτες. Δηλαδή, σκοπός είναι να βοηθηθεί κάθε πολίτης ξεχωριστά.\n\nΕπίσης, ο Μητσοτάκης τόνισε ότι ο προϋπολογισμός θα βοηθήσει την Ελλάδα να γίνει μια πιο σύγχρονη ευρωπαϊκή χώρα. Δεν έχει διευκρινιστεί ακόμα πώς θα επιτευχθούν αυτοί οι στόχοι στην πράξη.",
+      "simpleText": "Πληρωμές από e-ΕΦΚΑ και ΔΥΠΑ έως 19 Δεκεμβρίου\n\nΑπό τις 15 έως τις 19 Δεκεμβρίου 2025, θα δοθούν χρήματα σε πολλούς ανθρώπους από τον e-ΕΦΚΑ και τη Δημόσια Υπηρεσία Απασχόλησης (ΔΥΠΑ). Συνολικά, θα πληρωθούν 1,46 δισεκατομμύρια ευρώ σε περίπου 3 εκατομμύρια άτομα.\n\nΟ e-ΕΦΚΑ θα δώσει χρήματα για συντάξεις και άλλες πληρωμές. Συγκεκριμένα, στις 19 Δεκεμβρίου θα καταβληθούν 1,26 δισεκατομμύρια ευρώ για τις συντάξεις Ιανουαρίου 2026 σε 2,55 εκατομμύρια άτομα.\n\nΗ ΔΥΠΑ θα πληρώσει για επιδόματα ανεργίας, δώρα Χριστουγέννων και άδειες μητρότητας. Αυτές οι πληρωμές είναι σημαντικές, καθώς βοηθούν οικονομικά πολλούς πολίτες κατά τη διάρκεια της εορταστικής περιόδου.",
       "sourceDomains": [
+        "ertnews.gr",
         "kathimerini.gr",
-        "tovima.gr",
         "news.gr"
       ],
       "sources": [
         {
-          "title": "Kathimerini",
-          "url": "https://www.kathimerini.gr/politics/563975212/mitsotakis-psifizoyme-ena-proypologismo-poy-metatrepei-tin-proodo-tis-oikonomias-se-atomiki-prokopi/"
+          "title": "ERT News",
+          "url": "https://www.ertnews.gr/eidiseis/oikonomia/o-xartis-ton-pliromon-apo-ton-e-efka-kai-ti-dypa-eos-tis-19-dekemvriou/"
         },
         {
-          "title": "TO BHMA",
-          "url": "https://www.tovima.gr/2025/12/13/politics/mitsotakis-gia-proypologismo-metatrepei-tin-proodo-tis-oikonomias-se-atomiki-prokopi/"
+          "title": "Kathimerini",
+          "url": "https://www.kathimerini.gr/economy/local/563975227/ypoyrgeio-ergasias-o-chartis-ton-pliromon-apo-ton-e-efka-kai-ti-dypa-eos-tis-19-dekemvrioy/"
         },
         {
           "title": "News.gr",
-          "url": "https://www.news.gr/politikh/article/4030710/mitsotakis-se-proedrous-deep-ke-dimto-psifizoume-ena-proipologismo-pou-metatrepi-tin-proodo-tis-ikonomias-se-atomiki-prokopi.html"
+          "url": "https://www.news.gr/oikonomia/article/4030762/o-chartis-ton-pliromon-apo-ton-e-efka-ke-ti-dipa-eos-tis-19-dekemvriou.html"
         }
       ],
-      "mainArticleId": "f86d793b89a1",
+      "mainArticleId": "3a1a8e43ef2a",
       "relatedArticleIds": [],
-      "createdAt": "2025-12-13T12:40:57.195Z"
+      "createdAt": "2025-12-13T14:06:25.563Z"
     },
     {
-      "id": "736ac0c7-4d17-4f88-bb05-577ebebfeb29",
+      "id": "2e58eefa-7353-412a-8be1-53f5ef2fdb0f",
       "contentType": "agent_serious_digest",
       "topic": "social",
       "topicLabel": "κοινωνικά θέματα",
       "title": "Ένα σημαντικό κοινωνικό θέμα σε απλά λόγια",
-      "simpleText": "Τροχαίο Δυστύχημα στη Χίο\n\nΣτη Χίο, το πρωί του Σαββάτου, συνέβη ένα σοβαρό τροχαίο δυστύχημα. Το περιστατικό έγινε στη Λεωφόρο Αιγαίου, κοντά στο λιμάνι του νησιού. Ένας 59χρονος οδηγός μοτοσικλέτας συγκρούστηκε με έναν 88χρονο πεζό γύρω στις 6:20 το πρωί.\n\nΟ οδηγός της μοτοσικλέτας μεταφέρθηκε στο νοσοκομείο, όπου δυστυχώς κατέληξε. Ο πεζός τραυματίστηκε και λαμβάνει ιατρική φροντίδα, αλλά δεν κινδυνεύει η ζωή του.\n\nΗ τροχαία της Χίου διερευνά το ατύχημα. Η έρευνα στοχεύει στο να αποσαφηνιστούν οι συνθήκες κάτω από τις οποίες έγινε το περιστατικό.",
+      "simpleText": "Σύλληψη 28χρονου για διακίνηση κάνναβης\n\nΈνας άνδρας 28 ετών συνελήφθη στην περιοχή του Αιγάλεω. Η αστυνομία τον συνέλαβε με βάση ευρωπαϊκό ένταλμα σύλληψης που είχε εκδώσει η Εσθονία. Ο άνδρας κατηγορείται ότι προσπάθησε να μεταφέρει 17 κιλά κάνναβης στην Εσθονία τον Αύγουστο. Η κάνναβη βρέθηκε στις αποσκευές του στο αεροδρόμιο του Ταλίν, της πρωτεύουσας της Εσθονίας.\n\nΜετά τη σύλληψή του, ο άνδρας οδηγήθηκε στον εισαγγελέα. Η είδηση αυτή είναι σημαντική γιατί σχετίζεται με τη διακίνηση ναρκωτικών, ένα σοβαρό κοινωνικό πρόβλημα που επηρεάζει πολλές χώρες στην Ευρώπη.",
       "sourceDomains": [
         "ertnews.gr",
         "kathimerini.gr"
@@ -45,41 +45,41 @@
       "sources": [
         {
           "title": "ERT News",
-          "url": "https://www.ertnews.gr/perifereiakoi-stathmoi/voreio_aigaio/xios-troxaio-dystyxima-sto-dromo-tis-prokymaias/"
+          "url": "https://www.ertnews.gr/eidiseis/ellada/synelifthi-diokomenos-me-eyropaiko-entalma-syllipsis-gia-diakinisi-17-kilon-kannavis/"
         },
         {
           "title": "Kathimerini",
-          "url": "https://www.kathimerini.gr/society/563975161/chios-trochaio-dystychima-me-thyma-59chrono-motosikletisti/"
+          "url": "https://www.kathimerini.gr/society/astynomiko/563975236/aigaleo-synelifthi-28chronos-gia-diakinisi-kannavis-ekkremoyse-eyropaiko-entalma-se-varos-toy/"
         }
       ],
-      "mainArticleId": "81ac31a1fee0",
+      "mainArticleId": "e9dbe74af30a",
       "relatedArticleIds": [],
-      "createdAt": "2025-12-13T12:40:59.572Z"
+      "createdAt": "2025-12-13T14:06:28.295Z"
     },
     {
-      "id": "bf97cf86-ceb2-4d7f-bf27-a8d5794255b9",
+      "id": "2deb3784-1c33-485f-bf4d-28c7540aaa89",
       "contentType": "agent_serious_digest",
       "topic": "world",
       "topicLabel": "παγκόσμια επικαιρότητα",
       "title": "Παγκόσμια επικαιρότητα σε απλά λόγια",
-      "simpleText": "### Ουκρανία: Επίθεση αφήνει χιλιάδες χωρίς ρεύμα\n\nΣτην Ουκρανία, χιλιάδες άνθρωποι έμειναν χωρίς ηλεκτρικό ρεύμα μετά από ρωσική επίθεση. Η επίθεση έγινε κυρίως κατά τη διάρκεια της νύχτας και έπληξε επτά επαρχίες της χώρας.\n\nΟι επιθέσεις στόχευσαν τις ενεργειακές υποδομές, δηλαδή τα σημεία που παράγουν και διανέμουν το ηλεκτρικό ρεύμα. Αυτό σημαίνει ότι δεν έχουν ρεύμα πολλά σπίτια και εταιρείες.\n\nΣημαντική επίδραση είχε και στον πυρηνικό σταθμό της Ζαπορίζια. Αυτός ο σταθμός έμεινε για δωδέκατη φορά χωρίς ρεύμα. Η απουσία ρεύματος μπορεί να επηρεάσει τη σωστή λειτουργία του σταθμού, κάτι που δημιουργεί ανησυχίες για την ασφάλεια.\n\nΗ κατάσταση δυσκολεύει πολύ την καθημερινή ζωή των ανθρώπων, ενώ η ανησυχία για την ασφάλεια των πυρηνικών εγκαταστάσεων παραμένει υψηλή.",
+      "simpleText": "### Πιθανός Κίνδυνος για την ΕΕ αν Χάσει η Ουκρανία\n\nΟ Φρίντριχ Μερτς, ένας Γερμανός πολιτικός, μίλησε σε ένα συνέδριο στη Μόναχο. Αναφέρθηκε στην αυξανόμενη ένταση στον κόσμο και προειδοποίησε ότι η κατάσταση δεν είναι πλέον τόσο ειρηνική όσο παλιότερα.\n\nΣύμφωνα με τον Μερτς, αν η Ουκρανία χάσει τη σύγκρουση με τη Ρωσία, η Ευρωπαϊκή Ένωση (ΕΕ) μπορεί να βρεθεί σε κίνδυνο. Ανέφερε ότι η Ρωσία, υπό την ηγεσία του Πούτιν, θα μπορούσε να απειλήσει την ασφάλεια της Ευρώπης.\n\nΟ Μερτς κάλεσε για μεγαλύτερη υποστήριξη προς την Ουκρανία και την ενίσχυση της άμυνας της ΕΕ. Τόνισε επίσης ότι η Γερμανία πρέπει να προσαρμοστεί και να παραμείνει ισχυρή.\n\nΑυτά τα σχόλια υπογραμμίζουν τη σημασία μιας ενιαίας ευρωπαϊκής στρατηγικής σε θέματα εξωτερικής πολιτικής και άμυνας.",
       "sourceDomains": [
         "ertnews.gr",
-        "news.gr"
+        "kathimerini.gr"
       ],
       "sources": [
         {
           "title": "ERT News",
-          "url": "https://www.ertnews.gr/roi-idiseon/oukrania-xoris-reyma-epeita-apo-rosiki-epithesi-xiliades-anthropoi-sto-skotadi-kai-o-pyrinikos-stathmos-tis-zaporizia/"
+          "url": "https://www.ertnews.gr/eidiseis/diethni/merts-an-pesei-i-oukrania-sto-stoxastro-tou-poutin-tha-vrethei-i-ee/"
         },
         {
-          "title": "News.gr",
-          "url": "https://www.news.gr/kosmos/article/4030662/oukrania-chiliades-anthropi-se-epta-eparchies-echoun-mini-choris-revma-epita-apo-rosiki-epithesi.html"
+          "title": "Kathimerini",
+          "url": "https://www.kathimerini.gr/world/563975242/merts-an-pesei-i-oykrania-sto-stochastro-tis-rosias-tha-tethei-i-e-e/"
         }
       ],
-      "mainArticleId": "20ab63ded1cf",
+      "mainArticleId": "71d4c78aac60",
       "relatedArticleIds": [],
-      "createdAt": "2025-12-13T12:41:02.520Z"
+      "createdAt": "2025-12-13T14:06:32.981Z"
     }
   ]
 }
