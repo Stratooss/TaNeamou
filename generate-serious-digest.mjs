@@ -1,6 +1,7 @@
 import fs from "fs/promises";
 import crypto from "crypto";
 import { openai } from "./llm/openaiClient.js";
+
 import {
   SERIOUS_TOPICS_SYSTEM_PROMPT,
   SERIOUS_DIGEST_SYSTEM_PROMPT,
@@ -143,6 +144,17 @@ function scoreSeriousArticle(article) {
   const sourcesCount = Array.isArray(article.sources) ? article.sources.length : 1;
   const timeMs = article.publishedAt ? new Date(article.publishedAt).getTime() : 0;
   return sourcesCount * 1_000_000_000_000 + timeMs;
+}
+
+// ✅ Allowlist: ΜΟΝΟ Pixabay images (όχι RSS/original άρθρα)
+function isPixabayUrl(url) {
+  if (!url || typeof url !== "string") return false;
+  const u = url.trim().toLowerCase();
+  return (
+    u.includes("cdn.pixabay.com/") ||
+    u.includes("pixabay.com/get/") ||
+    u.includes("pixabay.com/photos/")
+  );
 }
 
 // Διαβάζει JSON αν υπάρχει (για "κρατάω το προηγούμενο")
@@ -323,6 +335,11 @@ ${JSON.stringify(payload, null, 2)}
     max_output_tokens: 1600,
   });
 
+  // ✅ Κρατάμε ΜΟΝΟ Pixabay εικόνα (αν υπάρχει στο mainArticle)
+  const digestImageUrl = isPixabayUrl(mainArticle?.imageUrl)
+    ? mainArticle.imageUrl
+    : null;
+
   let simpleText = extractTextFromResponse(response).trim();
   simpleText = stripSourcesAndInlineLinks(simpleText);
   simpleText = cleanSimplifiedText(simpleText);
@@ -349,6 +366,7 @@ ${JSON.stringify(payload, null, 2)}
     sourceDomains,
     sources,
     mainArticleId: mainArticle.id,
+    imageUrl: digestImageUrl,
     relatedArticleIds: [],
     createdAt: new Date().toISOString(),
   };
@@ -453,4 +471,3 @@ main().catch((err) => {
   console.error("❌ Σφάλμα στο generate-serious-digest:", err);
   process.exit(1);
 });
-
