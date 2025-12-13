@@ -5,7 +5,11 @@ import {
   SERIOUS_TOPICS_SYSTEM_PROMPT,
   SERIOUS_DIGEST_SYSTEM_PROMPT,
 } from "./llm/seriousDigestPrompts.js";
-import { cleanSimplifiedText, extractSourceDomains, extractHostname } from "./llm/textUtils.js";
+import {
+  cleanSimplifiedText,
+  extractSourceDomains,
+  extractHostname,
+} from "./llm/textUtils.js";
 
 // Paths
 const NEWS_PATH = new URL("./news.json", import.meta.url);
@@ -141,6 +145,22 @@ function scoreSeriousArticle(article) {
   return sourcesCount * 1_000_000_000_000 + timeMs;
 }
 
+// Διαβάζει JSON αν υπάρχει (για "κρατάω το προηγούμενο")
+async function readJsonIfExists(urlPath) {
+  try {
+    const raw = await fs.readFile(urlPath, "utf-8");
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+// Αν υπήρχε placeholder digest στο παλιό αρχείο, δεν θέλουμε να το “κλειδώσουμε”
+function isNoNewsPlaceholderDigest(article) {
+  const t = article?.simpleText || "";
+  return /Σήμερα δεν βρέθηκε κατάλληλη είδηση/i.test(t);
+}
+
 // ---------- Classification: serious → (politics_economy | social | world) ----------
 
 async function classifySeriousArticles(seriousArticles) {
@@ -257,26 +277,10 @@ async function generateSeriousDigestForTopic(topicKey, mainArticle) {
   const today = new Date().toISOString().slice(0, 10);
   const hasMain = Boolean(mainArticle);
 
-  // Αν δεν υπάρχει mainArticle: ασφαλές κείμενο, χωρίς web search, χωρίς LLM
+  // ✅ Αν δεν υπάρχει mainArticle: δεν δημιουργούμε placeholder.
+  // Το main() θα κρατήσει το προηγούμενο (αν υπάρχει).
   if (!hasMain) {
-    const simpleText = cleanSimplifiedText(
-      `Σήμερα δεν βρέθηκε κατάλληλη είδηση για ${topicLabel} από τις πηγές RSS που χρησιμοποιούμε.
-Μπορείς να ξαναδοκιμάσεις αργότερα μέσα στην ημέρα.`
-    );
-
-    return {
-      id: crypto.randomUUID(),
-      contentType: "agent_serious_digest",
-      topic: topicKey,
-      topicLabel,
-      title,
-      simpleText,
-      sourceDomains: [],
-      sources: [],
-      mainArticleId: null,
-      relatedArticleIds: [],
-      createdAt: new Date().toISOString(),
-    };
+    return null;
   }
 
   const payload = {
@@ -353,6 +357,14 @@ ${JSON.stringify(payload, null, 2)}
 // ---------- Main ----------
 
 async function main() {
+  // 0) Διαβάζουμε το προηγούμενο serious-digest.json (για “keep last good content”)
+  const prevDigest = await readJsonIfExists(SERIOUS_DIGEST_PATH);
+  const prevByTopic = new Map(
+    (prevDigest?.articles || [])
+      .filter((a) => a && a.topic)
+      .map((a) => [a.topic, a])
+  );
+
   // 1. Διαβάζουμε news.json
   let json;
   try {
@@ -368,13 +380,13 @@ async function main() {
   const serious = allArticles.filter((a) => a.category === "serious" && !a.isSensitive);
 
   if (!serious.length) {
-    console.log(
-      "ℹ️ Δεν υπάρχουν σοβαρές ειδήσεις στο news.json – θα βγάλουμε safe κείμενο (χωρίς web search)."
-    );
+    console.log("ℹ️ Δεν υπάρχουν σοβαρές ειδήσεις στο news.json (RSS-only).");
   }
 
   // 2. Ταξινόμηση σοβαρών ειδήσεων
-  const sortedSerious = [...serious].sort((a, b) => scoreSeriousArticle(b) - scoreSeriousArticle(a));
+  const sortedSerious = [...serious].sort(
+    (a, b) => scoreSeriousArticle(b) - scoreSeriousArticle(a)
+  );
 
   // 3. Ζητάμε από LLM να τις κατηγοριοποιήσει σε 3 θεματικές
   console.log("🧠 Ταξινόμηση σοβαρών ειδήσεων σε πολιτική/κοινωνικό/παγκόσμιο...");
@@ -389,10 +401,12 @@ async function main() {
 
   const digestArticles = [];
 
-  // 4. Για κάθε θεματική, επιλέγουμε mainArticle ή safe “δεν βρέθηκε”
+  // 4. Για κάθε θεματική, επιλέγουμε mainArticle ή κρατάμε το προηγούμενο
   for (const topic of SERIOUS_TOPICS) {
     const items = byTopic[topic] || [];
-    const sortedItems = [...items].sort((a, b) => scoreSeriousArticle(b) - scoreSeriousArticle(a));
+    const sortedItems = [...items].sort(
+      (a, b) => scoreSeriousArticle(b) - scoreSeriousArticle(a)
+    );
     const contextItems = sortedItems.slice(0, MAX_ITEMS_PER_TOPIC);
     const [mainArticle] = contextItems;
 
@@ -401,12 +415,26 @@ async function main() {
         `🧠 Δημιουργία άρθρου σοβαρής επικαιρότητας για "${topic}" με κύριο θέμα:`,
         mainArticle.simpleTitle || mainArticle.title
       );
-    } else {
-      console.log(`ℹ️ Δεν βρέθηκε mainArticle για "${topic}" (RSS-only mode).`);
+
+      const digest = await generateSeriousDigestForTopic(topic, mainArticle);
+      if (digest) {
+        digestArticles.push(digest);
+        continue;
+      }
     }
 
-    const digest = await generateSeriousDigestForTopic(topic, mainArticle || null);
-    if (digest) digestArticles.push(digest);
+    // 🔒 Δεν υπάρχει νέο mainArticle: κράτα το προηγούμενο (αν υπάρχει και δεν είναι placeholder)
+    const prev = prevByTopic.get(topic);
+    if (prev && !isNoNewsPlaceholderDigest(prev)) {
+      console.log(
+        `ℹ️ Δεν βρέθηκε νέο mainArticle για "${topic}". Κρατάω το προηγούμενο digest.`
+      );
+      digestArticles.push(prev);
+    } else {
+      console.log(
+        `ℹ️ Δεν βρέθηκε νέο mainArticle για "${topic}" και δεν υπάρχει προηγούμενο digest. Παραλείπεται.`
+      );
+    }
   }
 
   const output = {
@@ -425,5 +453,4 @@ main().catch((err) => {
   console.error("❌ Σφάλμα στο generate-serious-digest:", err);
   process.exit(1);
 });
-
 
